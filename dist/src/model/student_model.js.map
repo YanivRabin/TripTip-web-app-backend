@@ -1,0 +1,1 @@
+{"version":3,"file":"student_model.js","sourceRoot":"","sources":["../../../src/model/student_model.ts"],"names":[],"mappings":";;;;AAAA,wDAAgC;AAEhC,MAAM,aAAa,GAAG,IAAI,kBAAQ,CAAC,MAAM,CAAC;IACtC,IAAI,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE,QAAQ,EAAE,IAAI,EAAE,MAAM,EAAC,IAAI,EAAE;CACtD,CAAC,CAAA;AAEF,iBAAS,kBAAQ,CAAC,KAAK,CAAC,SAAS,EAAE,aAAa,CAAC,CAAA"}
