@@ -30,5 +30,11 @@ describe("-- Test --", () => {
         const data = res.body;
         expect(data.length).toEqual(0);
     }));
+    test("test 2", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app).get('/student');
+        expect(res.statusCode).toEqual(200);
+        const data = res.body;
+        expect(data.length).toEqual(0);
+    }));
 });
 //# sourceMappingURL=user.test.js.map
