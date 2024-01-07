@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     posts: [{
         post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post'}
     }],
-    refreshTokens: { type: [String], required: false }
+    tokens: { type: [String] }
 });
 
 export = mongoose.model('User', userSchema);

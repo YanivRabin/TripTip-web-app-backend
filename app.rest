@@ -1,34 +1,21 @@
 ###
 
-GET http://localhost:3000/student
-
-
-###
-
-POST http://localhost:3000/student
+POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "name": "yaniv rabin"
+  "email": "yaniv@rabin.com",
+  "password": "yanivrabin",
+  "name": "yaniv"
 }
 
 
 ###
 
-PUT http://localhost:3000/student
+POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "name": "new name",
-  "new_name" : "yaniv rabin"
-}
-
-
-###
-
-DELETE http://localhost:3000/student
-Content-Type: application/json
-
-{
-  "name": "yaniv rabin"
+  "email": "yaniv@rabin.com",
+  "password": "yanivrabi"
 }

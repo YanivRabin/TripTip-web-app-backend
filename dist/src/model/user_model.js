@@ -11,7 +11,7 @@ const userSchema = new mongoose_1.default.Schema({
     posts: [{
             post: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Post' }
         }],
-    refreshTokens: { type: [String], required: false }
+    tokens: { type: [String] }
 });
 module.exports = mongoose_1.default.model('User', userSchema);
 //# sourceMappingURL=user_model.js.map

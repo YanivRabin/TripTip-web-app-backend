@@ -10,18 +10,18 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const auth_route_1 = __importDefault(require("./routes/auth_route"));
 const initApp = () => {
-    const db = mongoose_1.default.connection;
-    db.on('error', error => console.error(error));
-    db.once('open', () => console.log('connected to mongo'));
-    return new Promise((resolve, reject) => {
-        mongoose_1.default.connect(process.env.DATABASE_URL)
-            .then(() => {
+    const promise = new Promise((resolve) => {
+        const db = mongoose_1.default.connection;
+        db.on('error', error => console.error(error));
+        db.once('open', () => console.log('connected to mongo'));
+        mongoose_1.default.connect(process.env.DATABASE_URL).then(() => {
             app.use(body_parser_1.default.urlencoded({ extended: true, limit: '1mb' }));
             app.use(body_parser_1.default.json());
             app.use("/auth", auth_route_1.default);
             resolve(app);
-        }).catch((err) => reject(err));
+        });
     });
+    return promise;
 };
 module.exports = initApp;
 //# sourceMappingURL=app.js.map
