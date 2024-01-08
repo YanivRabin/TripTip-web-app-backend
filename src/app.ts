@@ -5,6 +5,7 @@ dotenv.config();
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import authRouter from './routes/auth_route';
+import postRouter from './routes/post_route';
 
 
 const initApp = (): Promise<Express> => {
@@ -16,6 +17,7 @@ const initApp = (): Promise<Express> => {
             app.use(bodyParser.urlencoded({ extended:true, limit:'1mb' }));
             app.use(bodyParser.json());
             app.use("/auth", authRouter);
+            app.use("/post", postRouter);
             resolve(app);
         });
     });

@@ -25,7 +25,7 @@ const register = async (req: Request, res: Response) => {
         });
         return res.status(201).send(user);
     } catch {
-        return res.status(400);
+        return res.status(500);
     }
 }
 
@@ -64,40 +64,38 @@ const login = async (req: Request, res: Response) => {
             'refreshToken': refreshToken
         });
     } catch (err) {
-        return res.status(400).send("error missing email or password");
+        return res.status(500);
     }
 };
 
 const logout = async (req: Request, res: Response) => {
-    const authHeader = req.headers['authorization'];
-    const refreshToken = authHeader && authHeader.split(' ')[1]; // Bearer <token>
-    if (refreshToken === null) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    if (!token) {
         return res.sendStatus(401);
     }
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, async (err: { message: string; }, user: { '_id': string }) => {
-        console.log(err);
-        if (err) {
-            return res.status(403).send(err.message);
-        }
+    jwt.verify(token, process.env.JWT_SECRET, async (err: { message: string; }, user: { '_id': string }) => {
         try {
-            const userDb = await User.findOne({ '_id': user._id });
-            if (userDb.tokens === null || userDb.tokens.includes(refreshToken) === null) {
+            const userDb = await User.findById(user._id);
+            if (!userDb.tokens || !userDb.tokens.includes(token)) {
+                console.log("here");
+                
                 userDb.tokens = [];
                 await userDb.save();
                 return res.sendStatus(401);
             } else {
-                userDb.tokens = userDb.tokens.filter(t => t !== refreshToken);
+                userDb.tokens = userDb.tokens.filter(t => t !== token);
                 await userDb.save();
                 return res.sendStatus(200);
             }
         } catch (err) {
-            res.sendStatus(401).send(err.message);
+            res.sendStatus(500);
         }
     });
 }
 
 const refreshToken = async (req: Request, res: Response) => {
-    const authHeaders = req.body.authorization;
+    const authHeaders = req.headers.authorization;
     const token = authHeaders && authHeaders.split(' ')[1];
     if (token === null) {
         return res.sendStatus(401);
@@ -106,33 +104,32 @@ const refreshToken = async (req: Request, res: Response) => {
         if (err) {
             return res.status(403).send(err.message);
         }
-        const userId = user._id;
         try {
-            const user = await User.findById(userId);
-            if (user === null) {
+            const userDb = await User.findById(user._id);
+            if (userDb === null) {
                 return res.status(403).send('invalid requset'); 
             }
-            if (user.tokens.includes(token) === null) {
-                user.tokens = []; //invalidate all user tokens
-                await user.save();
+            if (userDb.tokens.includes(token) === null) {
+                userDb.tokens = []; //invalidate all user tokens
+                await userDb.save();
                 return res.status(403).send('invalid requset');
             }
             const accessToken = jwt.sign(
-                { _id: user._id },
+                { _id: userDb._id },
                 process.env.JWT_SECRET,
                 { expiresIn: process.env.JWT_EXPIRATION }
             );
             const refreshToken = jwt.sign(
-                { _id: user._id },
+                { _id: userDb._id },
                 process.env.JWT_REFRESH_SECRET
             );
-            user.tokens[user.tokens.indexOf(token)] = refreshToken;
-            await user.save();
+            userDb.tokens[userDb.tokens.indexOf(token)] = refreshToken;
+            await userDb.save();
             res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
         } catch (err) {
-            res.status(403).send(err.message);
+            res.status(500);
         }
-    })
+    });
 }
 
 export = {

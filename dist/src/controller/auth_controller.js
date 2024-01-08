@@ -36,7 +36,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(201).send(user);
     }
     catch (_a) {
-        return res.status(400);
+        return res.status(500);
     }
 });
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -69,40 +69,37 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (err) {
-        return res.status(400).send("error missing email or password");
+        return res.status(500);
     }
 });
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const authHeader = req.headers['authorization'];
-    const refreshToken = authHeader && authHeader.split(' ')[1]; // Bearer <token>
-    if (refreshToken === null) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    if (!token) {
         return res.sendStatus(401);
     }
-    jsonwebtoken_1.default.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(err);
-        if (err) {
-            return res.status(403).send(err.message);
-        }
+    jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET, (err, user) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const userDb = yield user_model_1.default.findOne({ '_id': user._id });
-            if (userDb.tokens === null || userDb.tokens.includes(refreshToken) === null) {
+            const userDb = yield user_model_1.default.findById(user._id);
+            if (!userDb.tokens || !userDb.tokens.includes(token)) {
+                console.log("here");
                 userDb.tokens = [];
                 yield userDb.save();
                 return res.sendStatus(401);
             }
             else {
-                userDb.tokens = userDb.tokens.filter(t => t !== refreshToken);
+                userDb.tokens = userDb.tokens.filter(t => t !== token);
                 yield userDb.save();
                 return res.sendStatus(200);
             }
         }
         catch (err) {
-            res.sendStatus(401).send(err.message);
+            res.sendStatus(500);
         }
     }));
 });
 const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const authHeaders = req.body.authorization;
+    const authHeaders = req.headers.authorization;
     const token = authHeaders && authHeaders.split(' ')[1];
     if (token === null) {
         return res.sendStatus(401);
@@ -111,25 +108,24 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (err) {
             return res.status(403).send(err.message);
         }
-        const userId = user._id;
         try {
-            const user = yield user_model_1.default.findById(userId);
-            if (user === null) {
+            const userDb = yield user_model_1.default.findById(user._id);
+            if (userDb === null) {
                 return res.status(403).send('invalid requset');
             }
-            if (user.tokens.includes(token) === null) {
-                user.tokens = []; //invalidate all user tokens
-                yield user.save();
+            if (userDb.tokens.includes(token) === null) {
+                userDb.tokens = []; //invalidate all user tokens
+                yield userDb.save();
                 return res.status(403).send('invalid requset');
             }
-            const accessToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
-            const refreshToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_REFRESH_SECRET);
-            user.tokens[user.tokens.indexOf(token)] = refreshToken;
-            yield user.save();
+            const accessToken = jsonwebtoken_1.default.sign({ _id: userDb._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
+            const refreshToken = jsonwebtoken_1.default.sign({ _id: userDb._id }, process.env.JWT_REFRESH_SECRET);
+            userDb.tokens[userDb.tokens.indexOf(token)] = refreshToken;
+            yield userDb.save();
             res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
         }
         catch (err) {
-            res.status(403).send(err.message);
+            res.status(500);
         }
     }));
 });

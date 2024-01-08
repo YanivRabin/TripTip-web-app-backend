@@ -17,6 +17,8 @@ const app_1 = __importDefault(require("../app"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const user_model_1 = __importDefault(require("../model/user_model"));
 let app;
+let accessToken = "";
+let refreshToken = "";
 const user = {
     email: "yaniv@rabin.com",
     password: "yanivrabin",
@@ -31,7 +33,7 @@ afterAll((done) => {
     mongoose_1.default.connection.close();
     done();
 });
-describe("-- User tests --", () => {
+describe("-- Auth tests --", () => {
     test("test register - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .post("/auth/register")
@@ -57,6 +59,8 @@ describe("-- User tests --", () => {
         expect(res.statusCode).toBe(200);
         expect(res.body.accessToken).not.toBe(null);
         expect(res.body.refreshToken).not.toBe(null);
+        accessToken = res.body.accessToken;
+        refreshToken = res.body.refreshToken;
     }));
     test("test login - missing password", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
@@ -70,34 +74,55 @@ describe("-- User tests --", () => {
             .send({ email: "yaniv@rabin.com", password: "01234" });
         expect(res.statusCode).toBe(401);
     }));
-    // יכול להיות שזה לא עובד בגלל שהטוקן תקף לשעה
-    // test("test logout - missing token", async () => {
-    //     const res = await request(app)
-    //         .get("/auth/logout")
-    //         .send();
-    //     expect(res.statusCode).toBe(401);
-    // });
+    test("test token - forbidden access without token", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app).get("/post");
+        expect(res.statusCode).toBe(401);
+    }));
+    test("test token - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post")
+            .set("Authorization", "Bearer " + accessToken);
+        expect(res.statusCode).toBe(200);
+    }));
+    test("test token - invalid token", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post")
+            .set("Authorization", "Bearer " + accessToken + "1");
+        expect(res.statusCode).toBe(401);
+    }));
+    jest.setTimeout(15000); //set a specific timeout for this test
+    test("test token - expired token", () => __awaiter(void 0, void 0, void 0, function* () {
+        //Simulate a delay of 4 seconds
+        yield new Promise(resolve => setTimeout(resolve, 4000));
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post")
+            .set("Authorization", "Bearer " + accessToken);
+        expect(res.statusCode).toBe(401);
+    }));
+    test("test refresh token - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/auth/refreshToken")
+            .set("Authorization", "Bearer " + refreshToken)
+            .send();
+        expect(res.statusCode).toBe(200);
+        expect(res.body.accessToken).not.toBe(null);
+        expect(res.body.refreshToken).not.toBe(null);
+        accessToken = res.body.accessToken;
+        refreshToken = res.body.refreshToken;
+        const res2 = yield (0, supertest_1.default)(app)
+            .get("/post")
+            .set("Authorization", "Bearer " + accessToken);
+        expect(res2.statusCode).toBe(200);
+    }));
     // test("test logout - success", async () => {
     //     const res = await request(app)
-    //         .post("/auth/login")
-    //         .send(user);
-    //     expect(res.statusCode).toBe(200);
-    //     expect(res.body.accessToken).toBeDefined();
-    //     const res2 = await request(app)
     //         .get("/auth/logout")
-    //         .set("Authorization", "Bearer " + res.body.accessToken)
-    //         .send();
-    //     expect(res2.statusCode).toBe(200);
-    // });
-    // test("test token - refresh token", async () => {
-    //     const res = await request(app)
-    //         .post("/auth/refreshToken")
-    //         .set("Authorization", "JWT " + refreshToken)
-    //         .send();
+    //         .set("Authorization", "Bearer " + refreshToken);
     //     expect(res.statusCode).toBe(200);
-    //     expect(res.body.accessToken).toBeDefined();
-    //     expect(res.body.refreshToken).toBeDefined();
-    // })
-    // test("test ", async () => {});
+    //     const res2 = await request(app)
+    //         .get("/post")
+    //         .set("Authorization", "Bearer " + accessToken);
+    //     expect(res2.statusCode).toBe(401);
+    // });
 });
-//# sourceMappingURL=user.test.js.map
+//# sourceMappingURL=auth.test.js.map

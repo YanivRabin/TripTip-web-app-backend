@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "tsc && jest --detectOpenHandles --forceExit",
-    "testUser": "tsc && jest --detectOpenHandles --forceExit ./src/test/user.test.ts",
+    "testAuth": "tsc && jest --detectOpenHandles --forceExit ./src/test/auth.test.ts",
+    "testPost": "tsc && jest --detectOpenHandles --forceExit ./src/test/post.test.ts",
     "dev": "nodemon ./src/server.ts",
     "start": "tsc && node dist/src/server.js",
     "lint": "eslint . --ext .ts"
@@ -22,7 +23,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/express": "^4.17.1",
+    "@types/express": "^4.17.21",
     "@types/jest": "^29.5.11",
     "@types/jsonwebtoken": "^9.0.5",
     "@typescript-eslint/eslint-plugin": "^6.14.0",

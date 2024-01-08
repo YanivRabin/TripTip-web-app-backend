@@ -6,7 +6,7 @@ import authenticate from '../common/auth_middleware';
 
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
-router.post('/logout',authenticate , AuthController.logout);
-router.post('/refreshToken', AuthController.refreshToken);
+router.get('/logout',authenticate , AuthController.logout);
+router.get('/refreshToken', AuthController.refreshToken);
 
 export = router;
