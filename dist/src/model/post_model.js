@@ -8,7 +8,8 @@ const userSchema = new mongoose_1.default.Schema({
     description: { type: String },
     photo: { type: String },
     comments: [{
-            comment: { type: String }
+            user: { type: String, require: true },
+            comment: { type: String, require: true }
         }]
 });
 module.exports = mongoose_1.default.model('Post', userSchema);

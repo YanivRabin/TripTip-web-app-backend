@@ -34,6 +34,19 @@ const getPostsByOwner = (req, res) => __awaiter(void 0, void 0, void 0, function
         return res.status(400);
     }
 });
+const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const post = yield post_model_1.default.findById(req.params.postId);
+        if (post === null) {
+            return res.status(401).send("post not found");
+        }
+        console.log(post);
+        return res.status(200).send(post);
+    }
+    catch (_c) {
+        return res.status(400);
+    }
+});
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const owner = req.body.owner;
     const description = req.body.description;
@@ -53,7 +66,7 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield user.save();
         return res.status(200).send(post);
     }
-    catch (_c) {
+    catch (_d) {
         console.log("error");
         return res.status(500);
     }
@@ -72,7 +85,7 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         return res.status(200).send(post);
     }
-    catch (_d) {
+    catch (_e) {
         return res.status(500);
     }
 });
@@ -91,15 +104,51 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield user.save();
         return res.status(200).send("post deleted");
     }
-    catch (_e) {
+    catch (_f) {
+        return res.status(500);
+    }
+});
+const commentPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const postId = req.params.postId;
+    const user = req.body.user;
+    const comment = req.body.comment;
+    if (!user || !comment) {
+        return res.status(400).send("user and comment are required");
+    }
+    try {
+        const post = yield post_model_1.default.findById(postId);
+        if (post === null) {
+            return res.status(401).send("post not found");
+        }
+        post.comments.push(req.body);
+        yield post.save();
+        return res.status(200).send(post);
+    }
+    catch (_g) {
+        return res.status(500);
+    }
+});
+const getPostComments = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const postId = req.params.postId;
+    try {
+        const post = yield post_model_1.default.findById(postId);
+        if (post === null) {
+            return res.status(401).send("post not found");
+        }
+        return res.status(200).send(post.comments);
+    }
+    catch (_h) {
         return res.status(500);
     }
 });
 module.exports = {
     getAllPosts,
     getPostsByOwner,
+    getPostById,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
+    commentPost,
+    getPostComments,
 };
 //# sourceMappingURL=post_controller.js.map

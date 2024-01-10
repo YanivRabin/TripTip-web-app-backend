@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
     description: { type: String },
     photo: { type: String },
     comments: [{
-         comment: { type: String } 
+        user: { type: String, require: true },
+        comment: { type: String, require: true } 
     }]
 });
 

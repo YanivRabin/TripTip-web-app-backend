@@ -18,27 +18,53 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const user_model_1 = __importDefault(require("../model/user_model"));
 const post_model_1 = __importDefault(require("../model/post_model"));
 let app;
-let accessToken = "";
-let postId = "";
+// user1
 const user = {
     email: "yaniv@rabin.com",
     password: "yanivrabin",
-    name: "yaniv"
+    name: "yaniv",
+    accessToken: ""
 };
 const post = {
     owner: "",
     description: "description",
     photo: "photo"
 };
+const post2 = {
+    owner: "",
+    description: "description2",
+    photo: "photo2"
+};
+// user2
+const user2 = {
+    email: "roy@toledo.com",
+    password: "roytoledo",
+    name: "roy",
+    accessToken: ""
+};
+const post3 = {
+    owner: "",
+    description: "description3",
+    photo: "photo3"
+};
 beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     console.log("brforeAll");
     app = yield (0, app_1.default)();
     yield user_model_1.default.deleteMany();
     yield post_model_1.default.deleteMany();
+    // create user1 and get access token
     const res = yield (0, supertest_1.default)(app).post("/auth/register").send(user);
+    user['_id'] = res.body._id;
     post.owner = res.body._id;
+    post2.owner = res.body._id;
     const res2 = yield (0, supertest_1.default)(app).post("/auth/login").send(user);
-    accessToken = res2.body.accessToken;
+    user.accessToken = res2.body.accessToken;
+    // create user2 and get access token
+    const res3 = yield (0, supertest_1.default)(app).post("/auth/register").send(user2);
+    user2['_id'] = res3.body._id;
+    post3.owner = res3.body._id;
+    const res4 = yield (0, supertest_1.default)(app).post("/auth/login").send(user2);
+    user2.accessToken = res4.body.accessToken;
 }));
 afterAll((done) => {
     mongoose_1.default.connection.close();
@@ -48,89 +74,154 @@ describe("-- Post tests --", () => {
     test("test create post - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .post("/post")
-            .set('Authorization', 'Bearer ' + accessToken)
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send(post);
         expect(res.statusCode).toBe(200);
-        postId = res.body._id;
+        // save post id for later use
+        post['_id'] = res.body._id;
+    }));
+    test("test create post2 - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .post("/post")
+            .set('Authorization', 'Bearer ' + user.accessToken)
+            .send(post2);
+        expect(res.statusCode).toBe(200);
+        // save post id for later use
+        post2['_id'] = res.body._id;
+    }));
+    test("test create post3 - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .post("/post")
+            .set('Authorization', 'Bearer ' + user2.accessToken)
+            .send(post3);
+        expect(res.statusCode).toBe(200);
+        // save post id for later use
+        post3['_id'] = res.body._id;
     }));
     test("test create post - missing description and photo", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .post("/post")
-            .set('Authorization', 'Bearer ' + accessToken)
-            .send({ owner: post.owner });
+            .set('Authorization', 'Bearer ' + user.accessToken)
+            .send({ owner: user['_id'] });
         expect(res.statusCode).toBe(400);
     }));
     test("test create post - missing owner", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .post("/post")
-            .set('Authorization', 'Bearer ' + accessToken)
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: post.description, photo: post.photo });
         expect(res.statusCode).toBe(401);
     }));
     test("test create post - invalid owner", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .post("/post")
-            .set('Authorization', 'Bearer ' + accessToken)
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ owner: "000000000000000000000000", description: post.description, photo: post.photo });
         expect(res.statusCode).toBe(401);
     }));
     test("test get all posts - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .get("/post")
-            .set('Authorization', 'Bearer ' + accessToken);
+            .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
+        expect(res.body.length).toBe(3);
     }));
-    test("test get posts by owner - success", () => __awaiter(void 0, void 0, void 0, function* () {
+    test("test get posts by owner1 - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .get("/post/" + post.owner)
-            .set('Authorization', 'Bearer ' + accessToken);
+            .get("/post/" + user['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
+        expect(res.body.length).toBe(2);
+    }));
+    test("test get posts by owner2 - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post/" + user2['_id'])
+            .set('Authorization', 'Bearer ' + user2.accessToken);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.length).toBe(1);
+    }));
+    test("test get post by id - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post/postId/" + post['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken);
+        expect(res.statusCode).toBe(200);
+        expect(res.body._id).toBe(post['_id']);
+        expect(res.body.description).toBe(post.description);
+        expect(res.body.photo).toBe(post.photo);
     }));
     test("test update post - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .put("/post/" + postId)
-            .set('Authorization', 'Bearer ' + accessToken)
+            .put("/post/" + post['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: "new description" });
         expect(res.statusCode).toBe(200);
     }));
     test("test update post - missing description and photo", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .put("/post/" + postId)
-            .set('Authorization', 'Bearer ' + accessToken)
+            .put("/post/" + post['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send({});
         expect(res.statusCode).toBe(400);
     }));
     test("test update post - invalid id", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .put("/post/000000000000000000000000")
-            .set('Authorization', 'Bearer ' + accessToken)
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: "new description" });
         expect(res.statusCode).toBe(401);
     }));
     test("test update post - missing id", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .put("/post/")
-            .set('Authorization', 'Bearer ' + accessToken)
+            .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: "new description" });
         expect(res.statusCode).toBe(404);
     }));
     test("test delete post - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .delete("/post/" + postId)
-            .set('Authorization', 'Bearer ' + accessToken);
+            .delete("/post/" + post['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
     }));
     test("test delete post - invalid id", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .delete("/post/000000000000000000000000")
-            .set('Authorization', 'Bearer ' + accessToken);
+            .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(401);
     }));
     test("test delete post - missing id", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .delete("/post/")
-            .set('Authorization', 'Bearer ' + accessToken);
+            .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(404);
+    }));
+    test("test get all posts after delete one - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post")
+            .set('Authorization', 'Bearer ' + user.accessToken);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.length).toBe(2);
+    }));
+    test("test comment post - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .put("/post/comment/" + post3['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken)
+            .send({ user: user.name, comment: "comment" });
+        expect(res.statusCode).toBe(200);
+    }));
+    test("test comment post - missing user and comment", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .put("/post/comment/" + post3['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken)
+            .send({});
+        expect(res.statusCode).toBe(400);
+    }));
+    test("test get post comments - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield (0, supertest_1.default)(app)
+            .get("/post/comment/" + post3['_id'])
+            .set('Authorization', 'Bearer ' + user.accessToken);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.length).toBe(1);
     }));
 });
 //# sourceMappingURL=post.test.js.map

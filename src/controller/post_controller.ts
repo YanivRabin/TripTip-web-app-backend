@@ -24,6 +24,20 @@ const getPostsByOwner = async (req: Request, res: Response) => {
     }
 }
 
+const getPostById = async (req: Request, res: Response) => {
+    try {
+        const post = await Post.findById(req.params.postId);
+        if (post === null) {
+            return res.status(401).send("post not found");
+        }
+        console.log(post);
+        
+        return res.status(200).send(post);
+    } catch {
+        return res.status(400);
+    }
+}
+
 const createPost = async (req: Request, res: Response) => {
     const owner = req.body.owner;
     const description = req.body.description;
@@ -89,10 +103,46 @@ const deletePost = async (req: Request, res: Response) => {
     }
 }
 
+const commentPost = async (req: Request, res: Response) => {
+    const postId = req.params.postId;
+    const user = req.body.user;
+    const comment = req.body.comment;
+    if (!user || !comment) {
+        return res.status(400).send("user and comment are required");
+    }
+    try {
+        const post = await Post.findById(postId);
+        if (post === null) {
+            return res.status(401).send("post not found");
+        }
+        post.comments.push(req.body);
+        await post.save();
+        return res.status(200).send(post);
+    } catch {
+        return res.status(500);
+    }
+}
+
+const getPostComments = async (req: Request, res: Response) => {
+    const postId = req.params.postId;
+    try {
+        const post = await Post.findById(postId);
+        if (post === null) {
+            return res.status(401).send("post not found");
+        }
+        return res.status(200).send(post.comments);
+    } catch {
+        return res.status(500);
+    }
+}
+
 export = {
     getAllPosts,
     getPostsByOwner,
+    getPostById,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
+    commentPost,
+    getPostComments,
 }
