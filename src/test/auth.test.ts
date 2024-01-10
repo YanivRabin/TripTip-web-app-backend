@@ -59,8 +59,6 @@ describe("-- Auth tests --", () => {
         refreshToken = res.body.refreshToken;
     });
 
-
-
     test("test login - missing password", async () => {
         const res = await request(app)
             .post("/auth/login")
@@ -121,14 +119,16 @@ describe("-- Auth tests --", () => {
         expect(res2.statusCode).toBe(200);
     });
 
-    // test("test logout - success", async () => {
-    //     const res = await request(app)
-    //         .get("/auth/logout")
-    //         .set("Authorization", "Bearer " + refreshToken);
-    //     expect(res.statusCode).toBe(200);
-    //     const res2 = await request(app)
-    //         .get("/post")
-    //         .set("Authorization", "Bearer " + accessToken);
-    //     expect(res2.statusCode).toBe(401);
-    // });
+    test("test logout - success", async () => {
+        const res = await request(app)
+            .get("/auth/logout")
+            .set("Authorization", "Bearer " + refreshToken);
+        expect(res.statusCode).toBe(200);
+        refreshToken = res.body.refreshToken;
+        const res2 = await request(app)
+            .get("/auth/refreshToken")
+            .set("Authorization", "Bearer " + refreshToken)
+            .send();
+        expect(res2.statusCode).toBe(403);
+    });
 });
