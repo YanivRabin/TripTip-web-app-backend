@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from '../model/user_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import passport from 'passport';
 
 
 const register = async (req: Request, res: Response) => {
@@ -26,7 +27,8 @@ const register = async (req: Request, res: Response) => {
             'name': name
         });
         return res.status(201).send(user);
-    } catch {
+    } catch (err) {
+        console.log("error: " + err.message);
         return res.status(500);
     }
 }
@@ -59,11 +61,8 @@ const login = async (req: Request, res: Response) => {
             process.env.JWT_REFRESH_SECRET
         );
         // save refresh token in db
-        if (user.tokens === null) {
-            user.tokens = [refreshToken];
-        } else {
-            user.tokens.push(refreshToken);
-        }
+        user.tokens = [];
+        user.tokens.push(refreshToken);
         await user.save();
         // send tokens to client
         return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
@@ -90,15 +89,13 @@ const logout = async (req: Request, res: Response) => {
             // remove token from db
             if (!userDb.tokens || !userDb.tokens.includes(token)) {
                 userDb.tokens = [];
-                await userDb.save();
-                return res.sendStatus(401);
             } else {
                 userDb.tokens = userDb.tokens.filter(t => t !== token);
-                await userDb.save();
-                return res.status(200).send(userDb);
             }
+            await userDb.save();
+            return res.status(200).send(userDb);
         } catch (err) {
-            res.sendStatus(500);
+            return res.sendStatus(500);
         }
     });
 }
@@ -140,16 +137,63 @@ const refreshToken = async (req: Request, res: Response) => {
             userDb.tokens[userDb.tokens.indexOf(token)] = refreshToken;
             await userDb.save();
             // send tokens to client
-            res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+            return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
         } catch (err) {
-            res.status(500);
+            return res.status(500);
         }
     });
 }
+
+const googleLogin = async (req: Request, res: Response) => {
+    passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
+}
+
+const googleCallback = async (req: Request, res: Response) => {
+    passport.authenticate('google', { successRedirect: '/pro', failureRedirect: '/auth/googleLogin' })(req, res);
+};
+
+const findOrCreateGoogleUser = async (email: string, name: string) => {
+    try {
+        // Check if the user already exists in your database using email
+        let user = await User.findOne({ email: email });
+        if (!user) {
+            // If the user doesn't exist, create a new user in the database
+            const randomPassword = Math.random().toString(36).substring(7);
+            const salt = await bcrypt.genSalt(10);
+            const encryptedPassword = await bcrypt.hash(randomPassword, salt);
+            user = await User.create({
+                email: email,
+                password: encryptedPassword,
+                name: name
+            });
+        }
+        // Create JWT tokens
+        const accessToken = jwt.sign(
+            { _id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRATION }
+        );
+        const refreshToken = jwt.sign(
+            { _id: user._id },
+            process.env.JWT_REFRESH_SECRET
+        );
+        // Save the refresh token in the database
+        user.tokens = [];
+        user.tokens.push(refreshToken);
+        await user.save();
+        return { user, accessToken, refreshToken };
+    } catch (error) {
+        console.error('Error in Google callback:', error);
+    }
+}
+
 
 export = {
     login,
     register,
     logout,
-    refreshToken
+    refreshToken,
+    googleLogin,
+    googleCallback,
+    findOrCreateGoogleUser
 }

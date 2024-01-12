@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const user_model_1 = __importDefault(require("../model/user_model"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const passport_1 = __importDefault(require("passport"));
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const email = req.body.email;
     const password = req.body.password;
@@ -37,7 +38,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         return res.status(201).send(user);
     }
-    catch (_a) {
+    catch (err) {
+        console.log("error: " + err.message);
         return res.status(500);
     }
 });
@@ -62,12 +64,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const accessToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
         const refreshToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_REFRESH_SECRET);
         // save refresh token in db
-        if (user.tokens === null) {
-            user.tokens = [refreshToken];
-        }
-        else {
-            user.tokens.push(refreshToken);
-        }
+        user.tokens = [];
+        user.tokens.push(refreshToken);
         yield user.save();
         // send tokens to client
         return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
@@ -94,15 +92,12 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             // remove token from db
             if (!userDb.tokens || !userDb.tokens.includes(token)) {
                 userDb.tokens = [];
-                yield userDb.save();
-                return res.sendStatus(401);
             }
             else {
                 userDb.tokens = userDb.tokens.filter(t => t !== token);
-                yield userDb.save();
-                console.log(userDb.tokens);
-                return res.status(200).send(userDb);
             }
+            yield userDb.save();
+            return res.status(200).send(userDb);
         }
         catch (err) {
             res.sendStatus(500);
@@ -122,7 +117,6 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.status(403).send(err.message);
         }
         try {
-            console.log("refresh token");
             // check if user exist
             const userDb = yield user_model_1.default.findById(user._id);
             if (userDb === null) {
@@ -147,10 +141,59 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
     }));
 });
+const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    passport_1.default.authenticate('google', { scope: ['profile', 'email'] })(req, res);
+});
+const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    passport_1.default.authenticate('google', { successRedirect: '/pro', failureRedirect: '/login' })(req, res);
+    // passport.authenticate('google', async (err, profile) => {
+    //     if (err) {
+    //         return res.status(500).send('Internal Server Error');
+    //     }
+    //     try {
+    //         // Check if the user already exists in your database using email
+    //         let user = await User.findOne({ email: profile.emails[0].value });
+    //         if (!user) {
+    //             // If the user doesn't exist, create a new user in the database
+    //             const randomPassword = Math.random().toString(36).substring(7);
+    //             const salt = await bcrypt.genSalt(10);
+    //             const encryptedPassword = await bcrypt.hash(randomPassword, salt);
+    //             user = await User.create({
+    //                 email: profile.emails[0].value,
+    //                 password: encryptedPassword,
+    //                 name: profile.displayName,
+    //                 // You can add additional fields as needed
+    //             });
+    //         }
+    //         // Create JWT tokens
+    //         const accessToken = jwt.sign(
+    //             { _id: user._id },
+    //             process.env.JWT_SECRET,
+    //             { expiresIn: process.env.JWT_EXPIRATION }
+    //         );
+    //         const refreshToken = jwt.sign(
+    //             { _id: user._id },
+    //             process.env.JWT_REFRESH_SECRET
+    //         );
+    //         // Save the refresh token in the database
+    //         user.tokens = [];
+    //         user.tokens.push(refreshToken);
+    //         await user.save();
+    //         req.user = user;
+    //         // Send tokens to the client
+    //         return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+    //     } catch (error) {
+    //         console.error('Error in Google callback:', error);
+    //         res.status(500).send('Internal Server Error');
+    //     }
+    // })(req, res);
+});
 module.exports = {
     login,
     register,
     logout,
-    refreshToken
+    refreshToken,
+    googleLogin,
+    googleCallback
 };
 //# sourceMappingURL=auth_controller.js.map
