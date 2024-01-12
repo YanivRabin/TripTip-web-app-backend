@@ -100,7 +100,6 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             else {
                 userDb.tokens = userDb.tokens.filter(t => t !== token);
                 yield userDb.save();
-                console.log(userDb.tokens);
                 return res.status(200).send(userDb);
             }
         }
@@ -122,7 +121,6 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.status(403).send(err.message);
         }
         try {
-            console.log("refresh token");
             // check if user exist
             const userDb = yield user_model_1.default.findById(user._id);
             if (userDb === null) {

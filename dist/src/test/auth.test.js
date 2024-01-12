@@ -115,7 +115,6 @@ describe("-- Auth tests --", () => {
         expect(res2.statusCode).toBe(200);
     }));
     test("test logout - success", () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log("logout");
         const res = yield (0, supertest_1.default)(app)
             .get("/auth/logout")
             .set("Authorization", "Bearer " + refreshToken);
@@ -125,7 +124,7 @@ describe("-- Auth tests --", () => {
             .get("/auth/refreshToken")
             .set("Authorization", "Bearer " + refreshToken)
             .send();
-        expect(res2.statusCode).toBe(401);
+        expect(res2.statusCode).toBe(403);
     }));
 });
 //# sourceMappingURL=auth.test.js.map
