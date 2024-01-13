@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Post from '../model/post_model';
 import User from '../model/user_model';
 
-// TODO yaniv add authentication to get all posts -> user not fount 401 error
+
 const getAllPosts = async (req: Request, res: Response) => {
     try {
         const posts = await Post.find();

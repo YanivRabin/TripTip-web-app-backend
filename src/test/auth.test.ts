@@ -74,20 +74,20 @@ describe("-- Auth tests --", () => {
     });
 
     test("test token - forbidden access without token", async () => {
-        const res = await request(app).get("/post");
+        const res = await request(app).get("/posts/getAllPosts");
         expect(res.statusCode).toBe(401);
     });
 
     test("test token - success", async () => {
         const res = await request(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken);
         expect(res.statusCode).toBe(200);
     });
 
     test("test token - invalid token", async () => {
         const res = await request(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken + "1");
         expect(res.statusCode).toBe(401);
     });
@@ -98,7 +98,7 @@ describe("-- Auth tests --", () => {
         //Simulate a delay of 4 seconds
         await new Promise(resolve => setTimeout(resolve, 4000));
         const res = await request(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken);
         expect(res.statusCode).toBe(401);
     });
@@ -114,7 +114,7 @@ describe("-- Auth tests --", () => {
         accessToken = res.body.accessToken;
         refreshToken = res.body.refreshToken;
         const res2 = await request(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken);
         expect(res2.statusCode).toBe(200);
     });

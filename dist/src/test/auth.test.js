@@ -75,18 +75,18 @@ describe("-- Auth tests --", () => {
         expect(res.statusCode).toBe(401);
     }));
     test("test token - forbidden access without token", () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app).get("/post");
+        const res = yield (0, supertest_1.default)(app).get("/posts/getAllPosts");
         expect(res.statusCode).toBe(401);
     }));
     test("test token - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken);
         expect(res.statusCode).toBe(200);
     }));
     test("test token - invalid token", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken + "1");
         expect(res.statusCode).toBe(401);
     }));
@@ -95,7 +95,7 @@ describe("-- Auth tests --", () => {
         //Simulate a delay of 4 seconds
         yield new Promise(resolve => setTimeout(resolve, 4000));
         const res = yield (0, supertest_1.default)(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken);
         expect(res.statusCode).toBe(401);
     }));
@@ -110,7 +110,7 @@ describe("-- Auth tests --", () => {
         accessToken = res.body.accessToken;
         refreshToken = res.body.refreshToken;
         const res2 = yield (0, supertest_1.default)(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set("Authorization", "Bearer " + accessToken);
         expect(res2.statusCode).toBe(200);
     }));

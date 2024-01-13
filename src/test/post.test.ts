@@ -66,7 +66,7 @@ describe("-- Post tests --", () => {
 
     test("test create post - success", async () => {
         const res = await request(app)
-            .post("/post")
+            .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send(post);
         expect(res.statusCode).toBe(200);
@@ -76,7 +76,7 @@ describe("-- Post tests --", () => {
 
     test("test create post2 - success", async () => {
         const res = await request(app)
-            .post("/post")
+            .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send(post2);
         expect(res.statusCode).toBe(200);
@@ -86,7 +86,7 @@ describe("-- Post tests --", () => {
 
     test("test create post3 - success", async () => {
         const res = await request(app)
-            .post("/post")
+            .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user2.accessToken)
             .send(post3);
         expect(res.statusCode).toBe(200);
@@ -96,7 +96,7 @@ describe("-- Post tests --", () => {
 
     test("test create post - missing description and photo", async () => {
         const res = await request(app)
-            .post("/post")
+            .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ owner: user['_id'] });
         expect(res.statusCode).toBe(400);
@@ -104,7 +104,7 @@ describe("-- Post tests --", () => {
 
     test("test create post - missing owner", async () => {
         const res = await request(app)
-            .post("/post")
+            .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: post.description, photo: post.photo });
         expect(res.statusCode).toBe(401);
@@ -112,7 +112,7 @@ describe("-- Post tests --", () => {
 
     test("test create post - invalid owner", async () => {
         const res = await request(app)
-            .post("/post")
+            .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ owner: "000000000000000000000000", description: post.description, photo: post.photo });
         expect(res.statusCode).toBe(401);
@@ -120,7 +120,7 @@ describe("-- Post tests --", () => {
 
     test("test get all posts - success", async () => {
         const res = await request(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(3);
@@ -128,7 +128,7 @@ describe("-- Post tests --", () => {
 
     test("test get posts by owner1 - success", async () => {
         const res = await request(app)
-            .get("/post/" + user['_id'])
+            .get("/posts/getPostByOwner/" + user['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(2);
@@ -136,7 +136,7 @@ describe("-- Post tests --", () => {
 
     test("test get posts by owner2 - success", async () => {
         const res = await request(app)
-            .get("/post/" + user2['_id'])
+            .get("/posts/getPostByOwner/" + user2['_id'])
             .set('Authorization', 'Bearer ' + user2.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(1);
@@ -144,7 +144,7 @@ describe("-- Post tests --", () => {
 
     test("test get post by id - success", async () => {
         const res = await request(app)
-            .get("/post/postId/" + post['_id'])
+            .get("/posts/postId/" + post['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body._id).toBe(post['_id']);
@@ -154,7 +154,7 @@ describe("-- Post tests --", () => {
 
     test("test update post - success", async () => {
         const res = await request(app)
-            .put("/post/" + post['_id'])
+            .put("/posts/updatePost/" + post['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: "new description" });
         expect(res.statusCode).toBe(200);
@@ -162,7 +162,7 @@ describe("-- Post tests --", () => {
 
     test("test update post - missing description and photo", async () => {
         const res = await request(app)
-            .put("/post/" + post['_id'])
+            .put("/posts/updatePost/" + post['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({});
         expect(res.statusCode).toBe(400);
@@ -170,7 +170,7 @@ describe("-- Post tests --", () => {
 
     test("test update post - invalid id", async () => {
         const res = await request(app)
-            .put("/post/000000000000000000000000")
+            .put("/posts/updatePost/000000000000000000000000")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: "new description" });
         expect(res.statusCode).toBe(401);
@@ -178,7 +178,7 @@ describe("-- Post tests --", () => {
 
     test("test update post - missing id", async () => {
         const res = await request(app)
-            .put("/post/")
+            .put("/posts/updatePost/")
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ description: "new description" });
         expect(res.statusCode).toBe(404);
@@ -186,28 +186,28 @@ describe("-- Post tests --", () => {
 
     test("test delete post - success", async () => {
         const res = await request(app)
-            .delete("/post/" + post['_id'])
+            .delete("/posts/deletePost/" + post['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
     });
 
     test("test delete post - invalid id", async () => {
         const res = await request(app)
-            .delete("/post/000000000000000000000000")
+            .delete("/posts/deletePost/000000000000000000000000")
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(401);
     });
 
     test("test delete post - missing id", async () => {
         const res = await request(app)
-            .delete("/post/")
+            .delete("/posts/deletePost/")
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(404);
     });
 
     test("test get all posts after delete one - success", async () => {
         const res = await request(app)
-            .get("/post")
+            .get("/posts/getAllPosts")
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(2);
@@ -215,7 +215,7 @@ describe("-- Post tests --", () => {
 
     test("test comment post - success", async () => {
         const res = await request(app)
-            .put("/post/comment/" + post3['_id'])
+            .put("/posts/createComment/" + post3['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({ user: user.name, comment: "comment" });
         expect(res.statusCode).toBe(200);
@@ -223,7 +223,7 @@ describe("-- Post tests --", () => {
 
     test("test comment post - missing user and comment", async () => {
         const res = await request(app)
-            .put("/post/comment/" + post3['_id'])
+            .put("/posts/createComment/" + post3['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken)
             .send({});
         expect(res.statusCode).toBe(400);
@@ -231,11 +231,9 @@ describe("-- Post tests --", () => {
 
     test("test get post comments - success", async () => {
         const res = await request(app)
-            .get("/post/comment/" + post3['_id'])
+            .get("/posts/getComments/" + post3['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(1);
     });
-
-    
 });

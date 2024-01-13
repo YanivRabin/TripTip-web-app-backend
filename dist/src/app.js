@@ -42,7 +42,7 @@ const initApp = () => {
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
                 callbackURL: process.env.GOOGLE_CALLBACK_URL
             }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
-                console.log(profile);
+                // const user = await auth_controller.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
                 return done(null, profile);
             })));
             // for testing
@@ -52,7 +52,7 @@ const initApp = () => {
             }, (req, res) => { res.send('pro'); });
             //
             app.use("/auth", auth_route_1.default);
-            app.use("/post", post_route_1.default);
+            app.use("/posts", post_route_1.default);
             resolve(app);
         });
     });

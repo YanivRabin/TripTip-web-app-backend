@@ -46,7 +46,7 @@ const initApp = (): Promise<Express> => {
             //
 
             app.use("/auth", authRouter);
-            app.use("/post", postRouter);
+            app.use("/posts", postRouter);
             resolve(app);
         });
     });

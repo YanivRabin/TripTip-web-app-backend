@@ -100,7 +100,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(200).send(userDb);
         }
         catch (err) {
-            res.sendStatus(500);
+            return res.sendStatus(500);
         }
     }));
 });
@@ -134,59 +134,46 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             userDb.tokens[userDb.tokens.indexOf(token)] = refreshToken;
             yield userDb.save();
             // send tokens to client
-            res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+            return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
         }
         catch (err) {
-            res.status(500);
+            return res.status(500);
         }
     }));
 });
 const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    passport_1.default.authenticate('google', { scope: ['profile', 'email'] })(req, res);
+    passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
 });
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    passport_1.default.authenticate('google', { successRedirect: '/pro', failureRedirect: '/login' })(req, res);
-    // passport.authenticate('google', async (err, profile) => {
-    //     if (err) {
-    //         return res.status(500).send('Internal Server Error');
-    //     }
-    //     try {
-    //         // Check if the user already exists in your database using email
-    //         let user = await User.findOne({ email: profile.emails[0].value });
-    //         if (!user) {
-    //             // If the user doesn't exist, create a new user in the database
-    //             const randomPassword = Math.random().toString(36).substring(7);
-    //             const salt = await bcrypt.genSalt(10);
-    //             const encryptedPassword = await bcrypt.hash(randomPassword, salt);
-    //             user = await User.create({
-    //                 email: profile.emails[0].value,
-    //                 password: encryptedPassword,
-    //                 name: profile.displayName,
-    //                 // You can add additional fields as needed
-    //             });
-    //         }
-    //         // Create JWT tokens
-    //         const accessToken = jwt.sign(
-    //             { _id: user._id },
-    //             process.env.JWT_SECRET,
-    //             { expiresIn: process.env.JWT_EXPIRATION }
-    //         );
-    //         const refreshToken = jwt.sign(
-    //             { _id: user._id },
-    //             process.env.JWT_REFRESH_SECRET
-    //         );
-    //         // Save the refresh token in the database
-    //         user.tokens = [];
-    //         user.tokens.push(refreshToken);
-    //         await user.save();
-    //         req.user = user;
-    //         // Send tokens to the client
-    //         return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
-    //     } catch (error) {
-    //         console.error('Error in Google callback:', error);
-    //         res.status(500).send('Internal Server Error');
-    //     }
-    // })(req, res);
+    passport_1.default.authenticate('google', { successRedirect: '/pro', failureRedirect: '/auth/googleLogin' })(req, res);
+});
+const findOrCreateGoogleUser = (email, name) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if the user already exists in your database using email
+        let user = yield user_model_1.default.findOne({ email: email });
+        if (!user) {
+            // If the user doesn't exist, create a new user in the database
+            const randomPassword = Math.random().toString(36).substring(7);
+            const salt = yield bcrypt_1.default.genSalt(10);
+            const encryptedPassword = yield bcrypt_1.default.hash(randomPassword, salt);
+            user = yield user_model_1.default.create({
+                email: email,
+                password: encryptedPassword,
+                name: name
+            });
+        }
+        // Create JWT tokens
+        const accessToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
+        const refreshToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_REFRESH_SECRET);
+        // Save the refresh token in the database
+        user.tokens = [];
+        user.tokens.push(refreshToken);
+        yield user.save();
+        return { user, accessToken, refreshToken };
+    }
+    catch (error) {
+        console.error('Error in Google callback:', error);
+    }
 });
 module.exports = {
     login,
@@ -194,6 +181,7 @@ module.exports = {
     logout,
     refreshToken,
     googleLogin,
-    googleCallback
+    googleCallback,
+    findOrCreateGoogleUser
 };
 //# sourceMappingURL=auth_controller.js.map
