@@ -44,7 +44,6 @@ beforeAll(async () => {
     await Post.deleteMany();
     // create user1 and get access token
     const res = await request(app).post("/auth/register").send(user);
-    console.log(res.body);
     user['_id'] = res.body.user._id;
     user.accessToken = res.body.accessToken;
     post.owner = res.body.user._id;
