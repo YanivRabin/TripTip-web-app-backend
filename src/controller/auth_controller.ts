@@ -160,7 +160,15 @@ const refreshToken = async (req: Request, res: Response) => {
 }
 
 const userInfo = async (req: Request, res: Response) => {
-    return req.user ? res.status(200).send(req.user) : res.sendStatus(401);
+    try {
+        const user = await User.findById(req.user['_id']);
+        if (user === null) {
+            return res.sendStatus(404);
+        }
+        return res.status(200).send(user);
+    } catch (err) {
+        return res.sendStatus(500);
+    }
 }
 
 const googleLogin = async (req: Request, res: Response) => {
@@ -168,7 +176,7 @@ const googleLogin = async (req: Request, res: Response) => {
 }
 
 const googleCallback = async (req: Request, res: Response) => {
-    passport.authenticate('google', { successRedirect: '/pro', failureRedirect: '/auth/googleLogin' })(req, res);
+    passport.authenticate('google', { successRedirect: '/', failureRedirect: '/auth/googleLogin' })(req, res);
 };
 
 const findOrCreateGoogleUser = async (email: string, name: string) => {
@@ -200,7 +208,7 @@ const findOrCreateGoogleUser = async (email: string, name: string) => {
         user.tokens = [];
         user.tokens.push(refreshToken);
         await user.save();
-        return { user, accessToken, refreshToken };
+        return { 'accessToken': accessToken, 'refreshToken': refreshToken };
     } catch (error) {
         console.error('Error in Google callback:', error);
     }

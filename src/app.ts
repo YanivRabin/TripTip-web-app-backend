@@ -10,6 +10,10 @@ import postRouter from './routes/post_route';
 import uploadRouter from './routes/upload_route';
 import multer from 'multer';
 import path from 'path';
+import auth_controller from './controller/auth_controller';
+import User from './model/user_model';
+
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const GoogleStrategy = googleAuth.Strategy;
@@ -37,8 +41,8 @@ const initApp = (): Promise<Express> => {
                 callbackURL: process.env.GOOGLE_CALLBACK_URL
             }, 
             async (accessToken, refreshToken, profile, done) => {
-                // const user = await auth_controller.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
-                return done(null, profile);
+                const user = await auth_controller.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
+                return done(null, user);
             }));
             // static files
             app.use(express.static('src/public'));
@@ -55,11 +59,24 @@ const initApp = (): Promise<Express> => {
 
             // for testing google login
             app.get('/google', (req, res) => {res.send('<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>');});
-            app.get('/pro',
-                (req, res, next) => {
-                    req.user ? next() : res.sendStatus(401);
-                },
-                (req, res) => {res.send('pro');}
+            app.get('/', async (req, res) => {
+                    const accessToken = req.user['accessToken'];
+                    const refreshToken = req.user['refreshToken'];
+                    if (accessToken && refreshToken) {
+                        try {
+                            const user = jwt.verify(accessToken, process.env.JWT_SECRET);
+                            const userDb = await User.findById(user['_id']);
+                            if (user === null) {
+                                return res.sendStatus(404);
+                            }
+                            return res.status(200).send("logged in: " + userDb.name);
+                        } catch (err) {
+                            return res.sendStatus(500);
+                        }
+                    } else {
+                        res.send('not logged in');
+                    }
+                }
              );
             //
             // for testing upload
