@@ -12,26 +12,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const express_1 = __importDefault(require("express"));
-const app = (0, express_1.default)();
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
 const mongoose_1 = __importDefault(require("mongoose"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const passport_1 = __importDefault(require("passport"));
 const express_session_1 = __importDefault(require("express-session"));
 const passport_google_oauth20_1 = __importDefault(require("passport-google-oauth20"));
-const GoogleStrategy = passport_google_oauth20_1.default.Strategy;
 const auth_route_1 = __importDefault(require("./routes/auth_route"));
 const post_route_1 = __importDefault(require("./routes/post_route"));
+const upload_route_1 = __importDefault(require("./routes/upload_route"));
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
+const app = (0, express_1.default)();
+const GoogleStrategy = passport_google_oauth20_1.default.Strategy;
+dotenv_1.default.config();
 const initApp = () => {
     const promise = new Promise((resolve) => {
         const db = mongoose_1.default.connection;
         db.on('error', error => console.error(error));
         db.once('open', () => console.log('connected to mongo'));
         mongoose_1.default.connect(process.env.DATABASE_URL).then(() => {
+            // body parser
             app.use(body_parser_1.default.urlencoded({ extended: true, limit: '1mb' }));
             app.use(body_parser_1.default.json());
             ``;
+            // passport and session
             app.use((0, express_session_1.default)({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
             app.use(passport_1.default.initialize());
             app.use(passport_1.default.session());
@@ -45,14 +50,34 @@ const initApp = () => {
                 // const user = await auth_controller.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
                 return done(null, profile);
             })));
-            // for testing
-            app.get('/', (req, res) => { res.send('<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>'); });
+            // static files
+            app.use(express_1.default.static('src/public'));
+            // multer config
+            const storage = multer_1.default.diskStorage({
+                destination: (req, file, cb) => {
+                    cb(null, 'src/public/images');
+                },
+                filename: (req, file, cb) => {
+                    cb(null, file.fieldname + '-' + Date.now() + path_1.default.extname(file.originalname));
+                }
+            });
+            const upload = (0, multer_1.default)({ storage: storage });
+            // for testing google login
+            app.get('/google', (req, res) => { res.send('<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>'); });
             app.get('/pro', (req, res, next) => {
                 req.user ? next() : res.sendStatus(401);
             }, (req, res) => { res.send('pro'); });
             //
+            // for testing upload
+            app.get('/register', (req, res) => { res.send('<form action="http://localhost:3000/auth/register" method="post">email:<input type="text" name="email">password:<input type="text" name="password">name:<input type="text" name="name"><input type="submit"></form>'); });
+            app.get('/login', (req, res) => { res.send('<form action="http://localhost:3000/auth/login" method="post">email:<input type="text" name="email">password:<input type="text" name="password"><input type="submit"></form>'); });
+            app.get('/upload', (req, res) => { res.send('<form action="http://localhost:3000/uploads/userPhoto" method="post" enctype="multipart/form-data"><input type="file" name="file"><input type="submit"></form>'); });
+            //
+            // paths
             app.use("/auth", auth_route_1.default);
             app.use("/posts", post_route_1.default);
+            app.use("/uploads", upload.single('file'), upload_route_1.default);
+            // start server
             resolve(app);
         });
     });

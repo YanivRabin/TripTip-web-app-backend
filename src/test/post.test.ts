@@ -44,17 +44,16 @@ beforeAll(async () => {
     await Post.deleteMany();
     // create user1 and get access token
     const res = await request(app).post("/auth/register").send(user);
-    user['_id'] = res.body._id;
-    post.owner = res.body._id;
-    post2.owner = res.body._id;
-    const res2 = await request(app).post("/auth/login").send(user);
-    user.accessToken = res2.body.accessToken;
+    console.log(res.body);
+    user['_id'] = res.body.user._id;
+    user.accessToken = res.body.accessToken;
+    post.owner = res.body.user._id;
+    post2.owner = res.body.user._id;
     // create user2 and get access token
-    const res3 = await request(app).post("/auth/register").send(user2);
-    user2['_id'] = res3.body._id;
-    post3.owner = res3.body._id;
-    const res4 = await request(app).post("/auth/login").send(user2);
-    user2.accessToken = res4.body.accessToken;
+    const res2 = await request(app).post("/auth/register").send(user2);
+    user2['_id'] = res2.body.user._id;
+    user2.accessToken = res2.body.accessToken;
+    post3.owner = res2.body.user._id;
 });
 
 afterAll((done) => {

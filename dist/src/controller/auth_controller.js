@@ -36,7 +36,15 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             'password': encryptedPassword,
             'name': name
         });
-        return res.status(201).send(user);
+        // create tokens
+        const accessToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
+        const refreshToken = jsonwebtoken_1.default.sign({ _id: user._id }, process.env.JWT_REFRESH_SECRET);
+        // save refresh token in db
+        user.tokens = [];
+        user.tokens.push(refreshToken);
+        yield user.save();
+        // send tokens to client
+        return res.status(201).send({ 'user': user, 'accessToken': accessToken, 'refreshToken': refreshToken });
     }
     catch (err) {
         console.log("error: " + err.message);
@@ -141,6 +149,9 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
     }));
 });
+const userInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    return req.user ? res.status(200).send(req.user) : res.sendStatus(401);
+});
 const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
 });
@@ -180,6 +191,7 @@ module.exports = {
     register,
     logout,
     refreshToken,
+    userInfo,
     googleLogin,
     googleCallback,
     findOrCreateGoogleUser

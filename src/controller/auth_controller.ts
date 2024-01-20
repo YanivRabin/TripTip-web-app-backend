@@ -41,7 +41,7 @@ const register = async (req: Request, res: Response) => {
         user.tokens.push(refreshToken);
         await user.save();
         // send tokens to client
-        return res.status(201).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+        return res.status(201).send({ 'user': user, 'accessToken': accessToken, 'refreshToken': refreshToken });
     } catch (err) {
         console.log("error: " + err.message);
         return res.status(500);
