@@ -26,7 +26,22 @@ const register = async (req: Request, res: Response) => {
             'password': encryptedPassword,
             'name': name
         });
-        return res.status(201).send(user);
+        // create tokens
+        const accessToken = jwt.sign(
+            { _id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRATION }
+        );
+        const refreshToken = jwt.sign(
+            { _id: user._id },
+            process.env.JWT_REFRESH_SECRET
+        );
+        // save refresh token in db
+        user.tokens = [];
+        user.tokens.push(refreshToken);
+        await user.save();
+        // send tokens to client
+        return res.status(201).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
     } catch (err) {
         console.log("error: " + err.message);
         return res.status(500);
@@ -144,6 +159,10 @@ const refreshToken = async (req: Request, res: Response) => {
     });
 }
 
+const userInfo = async (req: Request, res: Response) => {
+    return req.user ? res.status(200).send(req.user) : res.sendStatus(401);
+}
+
 const googleLogin = async (req: Request, res: Response) => {
     passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
 }
@@ -193,6 +212,7 @@ export = {
     register,
     logout,
     refreshToken,
+    userInfo,
     googleLogin,
     googleCallback,
     findOrCreateGoogleUser

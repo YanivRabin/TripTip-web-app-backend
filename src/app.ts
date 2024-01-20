@@ -1,15 +1,19 @@
 import express, { Express } from 'express';
-const app = express();
 import dotenv from 'dotenv';
-dotenv.config();
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import passport from 'passport';
 import session from 'express-session';
 import googleAuth from 'passport-google-oauth20';
-const GoogleStrategy = googleAuth.Strategy;
 import authRouter from './routes/auth_route';
 import postRouter from './routes/post_route';
+import uploadRouter from './routes/upload_route';
+import multer from 'multer';
+import path from 'path';
+
+const app = express();
+const GoogleStrategy = googleAuth.Strategy;
+dotenv.config();
 
 
 const initApp = (): Promise<Express> => {
@@ -18,8 +22,10 @@ const initApp = (): Promise<Express> => {
         db.on('error', error => console.error(error));
         db.once('open', () => console.log('connected to mongo'));
         mongoose.connect(process.env.DATABASE_URL).then(() => {
+            // body parser
             app.use(bodyParser.urlencoded({ extended:true, limit:'1mb' }));
             app.use(bodyParser.json());``
+            // passport and session
             app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
             app.use(passport.initialize());
             app.use(passport.session());
@@ -34,9 +40,21 @@ const initApp = (): Promise<Express> => {
                 // const user = await auth_controller.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
                 return done(null, profile);
             }));
+            // static files
+            app.use(express.static('src/public'));
+            // multer config
+            const storage = multer.diskStorage({
+                destination: (req, file, cb) => {
+                    cb(null, 'src/public/images');
+                },
+                filename: (req, file, cb) => {
+                    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+                }
+            });
+            const upload = multer({ storage: storage });
 
-            // for testing
-            app.get('/', (req, res) => {res.send('<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>');});
+            // for testing google login
+            app.get('/google', (req, res) => {res.send('<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>');});
             app.get('/pro',
                 (req, res, next) => {
                     req.user ? next() : res.sendStatus(401);
@@ -44,9 +62,17 @@ const initApp = (): Promise<Express> => {
                 (req, res) => {res.send('pro');}
              );
             //
-
+            // for testing upload
+            app.get('/register', (req, res) => {res.send('<form action="http://localhost:3000/auth/register" method="post">email:<input type="text" name="email">password:<input type="text" name="password">name:<input type="text" name="name"><input type="submit"></form>');});
+            app.get('/login', (req, res) => {res.send('<form action="http://localhost:3000/auth/login" method="post">email:<input type="text" name="email">password:<input type="text" name="password"><input type="submit"></form>');});
+            app.get('/upload', (req, res) => {res.send('<form action="http://localhost:3000/uploads/userPhoto" method="post" enctype="multipart/form-data"><input type="file" name="file"><input type="submit"></form>');});
+            //
+            
+            // paths
             app.use("/auth", authRouter);
             app.use("/posts", postRouter);
+            app.use("/uploads", upload.single('file'), uploadRouter);
+            // start server
             resolve(app);
         });
     });
