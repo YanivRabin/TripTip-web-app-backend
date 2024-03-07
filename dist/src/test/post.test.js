@@ -54,7 +54,6 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     yield post_model_1.default.deleteMany();
     // create user1 and get access token
     const res = yield (0, supertest_1.default)(app).post("/auth/register").send(user);
-    console.log(res.body);
     user['_id'] = res.body.user._id;
     user.accessToken = res.body.accessToken;
     post.owner = res.body.user._id;

@@ -150,13 +150,22 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }));
 });
 const userInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    return req.user ? res.status(200).send(req.user) : res.sendStatus(401);
+    try {
+        const user = yield user_model_1.default.findById(req.user['_id']);
+        if (user === null) {
+            return res.sendStatus(404);
+        }
+        return res.status(200).send(user);
+    }
+    catch (err) {
+        return res.sendStatus(500);
+    }
 });
 const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
 });
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    passport_1.default.authenticate('google', { successRedirect: '/pro', failureRedirect: '/auth/googleLogin' })(req, res);
+    passport_1.default.authenticate('google', { successRedirect: '/', failureRedirect: '/auth/googleLogin' })(req, res);
 });
 const findOrCreateGoogleUser = (email, name) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -180,7 +189,7 @@ const findOrCreateGoogleUser = (email, name) => __awaiter(void 0, void 0, void 0
         user.tokens = [];
         user.tokens.push(refreshToken);
         yield user.save();
-        return { user, accessToken, refreshToken };
+        return { 'accessToken': accessToken, 'refreshToken': refreshToken };
     }
     catch (error) {
         console.error('Error in Google callback:', error);
