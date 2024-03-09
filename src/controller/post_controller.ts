@@ -55,7 +55,8 @@ const createPost = async (req: Request, res: Response) => {
             owner: owner,
             description: description,
             photo: photo,
-        });        await post.save();
+        });        
+        await post.save();
         user.posts.push(post);
         await user.save();
         return res.status(200).send(post);
@@ -68,14 +69,14 @@ const createPost = async (req: Request, res: Response) => {
 const updatePost = async (req: Request, res: Response) => {
     const id = req.params.id;
     const description = req.body.description;
-    const photo = req.body.photo;
+    const photo = req.file;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
         const post = await Post.findOneAndUpdate(
             { _id: id },
-            req.body,
+            { description: description, photo: photo },
             { new: true }
         );
         if (post === null) {

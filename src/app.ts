@@ -7,12 +7,10 @@ import session from "express-session";
 import googleAuth from "passport-google-oauth20";
 import authRouter from "./routes/auth_route";
 import postRouter from "./routes/post_route";
-import uploadRouter from "./routes/upload_route";
 import multer from "multer";
 import path from "path";
 import auth_controller from "./controller/auth_controller";
 import User from "./model/user_model";
-
 import jwt from "jsonwebtoken";
 import cors from "cors";
 
@@ -105,29 +103,10 @@ const initApp = (): Promise<Express> => {
           res.send("not logged in");
         }
       });
-      //
-      // for testing upload
-      app.get("/register", (req, res) => {
-        res.send(
-          '<form action="http://localhost:3000/auth/register" method="post">email:<input type="text" name="email">password:<input type="text" name="password">name:<input type="text" name="name"><input type="submit"></form>'
-        );
-      });
-      app.get("/login", (req, res) => {
-        res.send(
-          '<form action="http://localhost:3000/auth/login" method="post">email:<input type="text" name="email">password:<input type="text" name="password"><input type="submit"></form>'
-        );
-      });
-      app.get("/upload", (req, res) => {
-        res.send(
-          '<form action="http://localhost:3000/uploads/userPhoto" method="post" enctype="multipart/form-data"><input type="file" name="file"><input type="submit"></form>'
-        );
-      });
-      //
-
+    
       // paths
-      app.use("/auth", authRouter);
+      app.use("/auth", upload.single("file"), authRouter);
       app.use("/posts", upload.single("file"), postRouter);
-      // app.use("/uploads", upload.single("file"), uploadRouter);
       // start server
       resolve(app);
     });
