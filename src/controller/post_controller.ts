@@ -41,7 +41,7 @@ const getPostById = async (req: Request, res: Response) => {
 const createPost = async (req: Request, res: Response) => {
     const owner = req.body.owner;
     const description = req.body.description;
-    const photo = req.file;
+    const photo = req.file.originalname;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
@@ -60,8 +60,8 @@ const createPost = async (req: Request, res: Response) => {
         user.posts.push(post);
         await user.save();
         return res.status(200).send(post);
-    } catch {
-        console.log("error");
+    } catch(err) {
+    console.log(err);
         return res.status(500);
     }
 }
@@ -69,7 +69,7 @@ const createPost = async (req: Request, res: Response) => {
 const updatePost = async (req: Request, res: Response) => {
     const id = req.params.id;
     const description = req.body.description;
-    const photo = req.file;
+    const photo = req.file.originalname;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
