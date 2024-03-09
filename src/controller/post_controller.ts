@@ -22,6 +22,7 @@ const getPostsByOwner = async (req: Request, res: Response) => {
     } catch {
         return res.status(400);
     }
+    // add 500 error : Internal server error
 }
 
 const getPostById = async (req: Request, res: Response) => {
