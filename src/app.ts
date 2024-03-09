@@ -126,8 +126,8 @@ const initApp = (): Promise<Express> => {
 
       // paths
       app.use("/auth", authRouter);
-      app.use("/posts", postRouter);
-      app.use("/uploads", upload.single("file"), uploadRouter);
+      app.use("/posts", upload.single("file"), postRouter);
+      // app.use("/uploads", upload.single("file"), uploadRouter);
       // start server
       resolve(app);
     });

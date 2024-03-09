@@ -41,7 +41,7 @@ const getPostById = async (req: Request, res: Response) => {
 const createPost = async (req: Request, res: Response) => {
     const owner = req.body.owner;
     const description = req.body.description;
-    const photo = req.body.photo;
+    const photo = req.file;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
@@ -51,8 +51,11 @@ const createPost = async (req: Request, res: Response) => {
             return res.status(401).send("user not found");
         }
         // save post and update user posts
-        const post = new Post(req.body);
-        await post.save();
+        const post = new Post({
+            owner: owner,
+            description: description,
+            photo: photo,
+        });        await post.save();
         user.posts.push(post);
         await user.save();
         return res.status(200).send(post);
