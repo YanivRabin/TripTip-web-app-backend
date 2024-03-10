@@ -40,8 +40,8 @@ const getPostById = async (req: Request, res: Response) => {
 const createPost = async (req: Request, res: Response) => {
     const name = req.body.name;
     const description = req.body.description;
-    const photo = req.file.path;
-    
+    const photo = req.file.path.replace('src/public/', '');
+        
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
