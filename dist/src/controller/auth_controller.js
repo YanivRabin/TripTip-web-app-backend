@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const user_model_1 = __importDefault(require("../model/user_model"));
+const post_model_1 = __importDefault(require("../model/post_model"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const passport_1 = __importDefault(require("passport"));
@@ -195,9 +196,30 @@ const findOrCreateGoogleUser = (email, name) => __awaiter(void 0, void 0, void 0
         console.error('Error in Google callback:', error);
     }
 });
+const changeProfilePicture = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const name = req.body.name;
+    let photo;
+    // Check if req.file exists and set photo accordingly
+    if (req.file) {
+        photo = req.file.path.replace('src/public/', '');
+    }
+    try {
+        const user = yield user_model_1.default.findOneAndUpdate({ name: name }, { photo: photo }, { new: true });
+        console.log();
+        if (user === null) {
+            return res.status(401).send("user not found");
+        }
+        yield post_model_1.default.updateMany({ name: name }, { profilePic: photo }, { new: true });
+        return res.status(200).send(user);
+    }
+    catch (_a) {
+        return res.status(500);
+    }
+});
 module.exports = {
     login,
     register,
+    changeProfilePicture,
     logout,
     refreshToken,
     userInfo,

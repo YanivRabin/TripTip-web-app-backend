@@ -44,6 +44,7 @@ const createPost = async (req: Request, res: Response) => {
 
     if (req.file) {
         photo = req.file.path.replace('src/public/', '');
+        // photo = req.file.path.replace('src\\public\\', ''); // for windows
     }
         
     if (!description || !photo) {

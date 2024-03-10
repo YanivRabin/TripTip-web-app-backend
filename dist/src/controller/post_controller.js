@@ -50,8 +50,11 @@ const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const name = req.body.name;
     const description = req.body.description;
-    const photo = req.file;
-    if (!description && !photo) {
+    let photo;
+    if (req.file) {
+        photo = req.file.path.replace('src/public/', '');
+    }
+    if (!description || !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
@@ -64,6 +67,7 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             name: name,
             description: description,
             photo: photo,
+            profilePic: user.photo
         });
         yield post.save();
         user.posts.push(post);
@@ -78,12 +82,23 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     const description = req.body.description;
-    const photo = req.file;
+    let photo;
+    // Check if req.file exists and set photo accordingly
+    if (req.file) {
+        photo = req.file.path.replace('src/public/', '');
+    }
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
-        const post = yield post_model_1.default.findOneAndUpdate({ _id: id }, { description: description, photo: photo }, { new: true });
+        const updateFields = {};
+        if (description) {
+            updateFields.description = description;
+        }
+        if (photo) {
+            updateFields.photo = photo;
+        }
+        const post = yield post_model_1.default.findOneAndUpdate({ _id: id }, updateFields, { new: true });
         if (post === null) {
             return res.status(401).send("post not found");
         }
