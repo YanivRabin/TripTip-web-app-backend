@@ -41,6 +41,7 @@ const createPost = async (req: Request, res: Response) => {
     const name = req.body.name;
     const description = req.body.description;
     let photo;
+
     if (req.file) {
         photo = req.file.path.replace('src/public/', '');
     }
@@ -58,6 +59,7 @@ const createPost = async (req: Request, res: Response) => {
             name: name,
             description: description,
             photo: photo,
+            profilePic: user.photo
         });        
         await post.save();
         user.posts.push(post);
