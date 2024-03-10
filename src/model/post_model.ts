@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 
 const userSchema = new mongoose.Schema({
-    owner: { type: String, require: true },
+    name: { type: String, require: true },
     description: { type: String },
     photo: { type: String },
     comments: [{

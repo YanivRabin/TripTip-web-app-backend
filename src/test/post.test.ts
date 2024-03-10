@@ -15,12 +15,12 @@ const user = {
     accessToken: ""
 }
 const post = {
-    owner: "",
+    name: "",
     description: "description",
     photo: "photo"
 }
 const post2 = {
-    owner: "",
+    name: "",
     description: "description2",
     photo: "photo2"
 }
@@ -32,7 +32,7 @@ const user2 = {
     accessToken: ""
 }
 const post3 = {
-    owner: "",
+    name: "",
     description: "description3",
     photo: "photo3"
 }
@@ -46,13 +46,13 @@ beforeAll(async () => {
     const res = await request(app).post("/auth/register").send(user);
     user['_id'] = res.body.user._id;
     user.accessToken = res.body.accessToken;
-    post.owner = res.body.user._id;
-    post2.owner = res.body.user._id;
+    post.name = res.body.user._id;
+    post2.name = res.body.user._id;
     // create user2 and get access token
     const res2 = await request(app).post("/auth/register").send(user2);
     user2['_id'] = res2.body.user._id;
     user2.accessToken = res2.body.accessToken;
-    post3.owner = res2.body.user._id;
+    post3.name = res2.body.user._id;
 });
 
 afterAll((done) => {
@@ -96,11 +96,11 @@ describe("-- Post tests --", () => {
         const res = await request(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
-            .send({ owner: user['_id'] });
+            .send({ name: user['_id'] });
         expect(res.statusCode).toBe(400);
     });
 
-    test("test create post - missing owner", async () => {
+    test("test create post - missing name", async () => {
         const res = await request(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
@@ -108,11 +108,11 @@ describe("-- Post tests --", () => {
         expect(res.statusCode).toBe(401);
     });
 
-    test("test create post - invalid owner", async () => {
+    test("test create post - invalid name", async () => {
         const res = await request(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
-            .send({ owner: "000000000000000000000000", description: post.description, photo: post.photo });
+            .send({ name: "000000000000000000000000", description: post.description, photo: post.photo });
         expect(res.statusCode).toBe(401);
     });
 
@@ -124,17 +124,17 @@ describe("-- Post tests --", () => {
         expect(res.body.length).toBe(3);
     });
 
-    test("test get posts by owner1 - success", async () => {
+    test("test get posts by name1 - success", async () => {
         const res = await request(app)
-            .get("/posts/getPostByOwner/" + user['_id'])
+            .get("/posts/getPostByname/" + user['_id'])
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(2);
     });
 
-    test("test get posts by owner2 - success", async () => {
+    test("test get posts by name2 - success", async () => {
         const res = await request(app)
-            .get("/posts/getPostByOwner/" + user2['_id'])
+            .get("/posts/getPostByname/" + user2['_id'])
             .set('Authorization', 'Bearer ' + user2.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(1);

@@ -6,7 +6,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const userSchema = new mongoose_1.default.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     photo: { type: String },
     posts: [{
             post: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Post' }

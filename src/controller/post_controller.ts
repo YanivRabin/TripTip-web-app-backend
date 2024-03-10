@@ -12,13 +12,14 @@ const getAllPosts = async (req: Request, res: Response) => {
     }
 }
 
-const getPostsByOwner = async (req: Request, res: Response) => {
+const getPostsByName = async (req: Request, res: Response) => {
     try {
-        const user = await User.findById(req.params.id);
-        if (user === null) {
-            return res.status(401).send("user not found");
+        // const user = await User.findById(req.params.id);
+        const posts = await Post.find({name: req.params.name});
+        if (posts === null) {
+            return res.status(401).send("there is no posts");
         }
-        return res.status(200).send(user.posts);
+        return res.status(200).send(posts);
     } catch {
         return res.status(400);
     }
@@ -30,8 +31,6 @@ const getPostById = async (req: Request, res: Response) => {
         if (post === null) {
             return res.status(401).send("post not found");
         }
-        console.log(post);
-        
         return res.status(200).send(post);
     } catch {
         return res.status(400);
@@ -39,20 +38,21 @@ const getPostById = async (req: Request, res: Response) => {
 }
 
 const createPost = async (req: Request, res: Response) => {
-    const owner = req.body.owner;
+    const name = req.body.name;
     const description = req.body.description;
-    const photo = req.file.originalname;
+    const photo = req.file.path;
+    
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
-        const user = await User.findOne({ _id: owner });
+        const user = await User.findOne({ name: name });
         if (user === null) {
             return res.status(401).send("user not found");
         }
         // save post and update user posts
         const post = new Post({
-            owner: owner,
+            name: name,
             description: description,
             photo: photo,
         });        
@@ -60,8 +60,8 @@ const createPost = async (req: Request, res: Response) => {
         user.posts.push(post);
         await user.save();
         return res.status(200).send(post);
-    } catch(err) {
-    console.log(err);
+    } catch {
+        console.log("error");
         return res.status(500);
     }
 }
@@ -69,7 +69,7 @@ const createPost = async (req: Request, res: Response) => {
 const updatePost = async (req: Request, res: Response) => {
     const id = req.params.id;
     const description = req.body.description;
-    const photo = req.file.originalname;
+    const photo = req.file;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
@@ -89,13 +89,13 @@ const updatePost = async (req: Request, res: Response) => {
 }
 
 const deletePost = async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const postId = req.params.postId;
     try {
-        const deletePost = await Post.findByIdAndDelete(id);
+        const deletePost = await Post.findByIdAndDelete(postId);
         if (!deletePost) {
             return res.status(401).send("post not found");
         }
-        const user = await User.findOne({ _id: deletePost['owner'] });
+        const user = await User.findOne({ name: deletePost['name'] });
         if (user === null) {
             return res.status(401).send("user not found");
         }
@@ -142,7 +142,7 @@ const getPostComments = async (req: Request, res: Response) => {
 
 export = {
     getAllPosts,
-    getPostsByOwner,
+    getPostsByName,
     getPostById,
     createPost,
     updatePost,

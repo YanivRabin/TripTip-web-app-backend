@@ -5,12 +5,12 @@ import authenticate from '../common/auth_middleware';
 
 
 router.get('/getAllPosts', authenticate, PostController.getAllPosts);
-router.get('/getPostByOwner/:id', authenticate, PostController.getPostsByOwner);
+router.get('/getPostByName/:name', authenticate, PostController.getPostsByName);
 router.get('/postId/:postId', authenticate, PostController.getPostById);
 router.get('/getComments/:postId', authenticate, PostController.getPostComments);
 router.post('/createPost', authenticate, PostController.createPost);
 router.put('/updatePost/:id', authenticate, PostController.updatePost);
 router.put('/createComment/:postId', authenticate, PostController.commentPost);
-router.delete('/deletePost/:id', authenticate, PostController.deletePost);
+router.delete('/deletePost/:postId', authenticate, PostController.deletePost);
 
 export = router;

@@ -22,13 +22,14 @@ const getAllPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         return res.status(400);
     }
 });
-const getPostsByOwner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getPostsByName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield user_model_1.default.findById(req.params.id);
-        if (user === null) {
-            return res.status(401).send("user not found");
+        // const user = await User.findById(req.params.id);
+        const posts = yield post_model_1.default.find({ name: req.params.name });
+        if (posts === null) {
+            return res.status(401).send("there is no posts");
         }
-        return res.status(200).send(user.posts);
+        return res.status(200).send(posts);
     }
     catch (_b) {
         return res.status(400);
@@ -40,7 +41,6 @@ const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (post === null) {
             return res.status(401).send("post not found");
         }
-        console.log(post);
         return res.status(200).send(post);
     }
     catch (_c) {
@@ -48,19 +48,23 @@ const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const owner = req.body.owner;
+    const name = req.body.name;
     const description = req.body.description;
-    const photo = req.body.photo;
+    const photo = req.file;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
-        const user = yield user_model_1.default.findOne({ _id: owner });
+        const user = yield user_model_1.default.findOne({ name: name });
         if (user === null) {
             return res.status(401).send("user not found");
         }
         // save post and update user posts
-        const post = new post_model_1.default(req.body);
+        const post = new post_model_1.default({
+            name: name,
+            description: description,
+            photo: photo,
+        });
         yield post.save();
         user.posts.push(post);
         yield user.save();
@@ -74,12 +78,12 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     const description = req.body.description;
-    const photo = req.body.photo;
+    const photo = req.file;
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
-        const post = yield post_model_1.default.findOneAndUpdate({ _id: id }, req.body, { new: true });
+        const post = yield post_model_1.default.findOneAndUpdate({ _id: id }, { description: description, photo: photo }, { new: true });
         if (post === null) {
             return res.status(401).send("post not found");
         }
@@ -90,13 +94,13 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.id;
+    const postId = req.params.postId;
     try {
-        const deletePost = yield post_model_1.default.findByIdAndDelete(id);
+        const deletePost = yield post_model_1.default.findByIdAndDelete(postId);
         if (!deletePost) {
             return res.status(401).send("post not found");
         }
-        const user = yield user_model_1.default.findOne({ _id: deletePost['owner'] });
+        const user = yield user_model_1.default.findOne({ name: deletePost['name'] });
         if (user === null) {
             return res.status(401).send("user not found");
         }
@@ -143,7 +147,7 @@ const getPostComments = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 module.exports = {
     getAllPosts,
-    getPostsByOwner,
+    getPostsByName,
     getPostById,
     createPost,
     updatePost,

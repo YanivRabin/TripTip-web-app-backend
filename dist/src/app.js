@@ -20,7 +20,6 @@ const express_session_1 = __importDefault(require("express-session"));
 const passport_google_oauth20_1 = __importDefault(require("passport-google-oauth20"));
 const auth_route_1 = __importDefault(require("./routes/auth_route"));
 const post_route_1 = __importDefault(require("./routes/post_route"));
-const upload_route_1 = __importDefault(require("./routes/upload_route"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const auth_controller_1 = __importDefault(require("./controller/auth_controller"));
@@ -99,22 +98,9 @@ const initApp = () => {
                     res.send("not logged in");
                 }
             }));
-            //
-            // for testing upload
-            app.get("/register", (req, res) => {
-                res.send('<form action="http://localhost:3000/auth/register" method="post">email:<input type="text" name="email">password:<input type="text" name="password">name:<input type="text" name="name"><input type="submit"></form>');
-            });
-            app.get("/login", (req, res) => {
-                res.send('<form action="http://localhost:3000/auth/login" method="post">email:<input type="text" name="email">password:<input type="text" name="password"><input type="submit"></form>');
-            });
-            app.get("/upload", (req, res) => {
-                res.send('<form action="http://localhost:3000/uploads/userPhoto" method="post" enctype="multipart/form-data"><input type="file" name="file"><input type="submit"></form>');
-            });
-            //
             // paths
-            app.use("/auth", auth_route_1.default);
-            app.use("/posts", post_route_1.default);
-            app.use("/uploads", upload.single("file"), upload_route_1.default);
+            app.use("/auth", upload.single("file"), auth_route_1.default);
+            app.use("/posts", upload.single("file"), post_route_1.default);
             // start server
             resolve(app);
         });
