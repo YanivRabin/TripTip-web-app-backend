@@ -6,6 +6,7 @@ import authenticate from '../common/auth_middleware';
 
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
+router.put('/changeProfilePicture',authenticate, AuthController.changeProfilePicture)
 router.get('/logout', AuthController.logout);
 router.get('/refreshToken', AuthController.refreshToken);
 router.get('/userInfo', authenticate, AuthController.userInfo);
