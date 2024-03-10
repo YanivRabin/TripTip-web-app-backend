@@ -40,9 +40,12 @@ const getPostById = async (req: Request, res: Response) => {
 const createPost = async (req: Request, res: Response) => {
     const name = req.body.name;
     const description = req.body.description;
-    const photo = req.file.path.replace('src/public/', '');
+    let photo;
+    if (req.file) {
+        photo = req.file.path.replace('src/public/', '');
+    }
         
-    if (!description && !photo) {
+    if (!description || !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
@@ -69,14 +72,26 @@ const createPost = async (req: Request, res: Response) => {
 const updatePost = async (req: Request, res: Response) => {
     const id = req.params.id;
     const description = req.body.description;
-    const photo = req.file;
+    let photo;
+
+    // Check if req.file exists and set photo accordingly
+    if (req.file) {
+        photo = req.file.path.replace('src/public/', '');
+    }
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
     }
     try {
+        const updateFields: { description?: string; photo?: string } = {};
+        if (description) {
+            updateFields.description = description;
+        }
+        if (photo) {
+            updateFields.photo = photo;
+        }
         const post = await Post.findOneAndUpdate(
             { _id: id },
-            { description: description, photo: photo },
+            updateFields,
             { new: true }
         );
         if (post === null) {
