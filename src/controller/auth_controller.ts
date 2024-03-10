@@ -177,7 +177,7 @@ const googleLogin = async (req: Request, res: Response) => {
 }
 
 const googleCallback = async (req: Request, res: Response) => {
-    passport.authenticate('google', { successRedirect: '/', failureRedirect: '/auth/googleLogin' })(req, res);
+    passport.authenticate('google', { successRedirect: 'http://localhost:5173/home', failureRedirect: '/auth/googleLogin' })(req, res);
 };
 
 const findOrCreateGoogleUser = async (email: string, name: string) => {

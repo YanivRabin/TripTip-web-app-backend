@@ -80,29 +80,29 @@ const initApp = (): Promise<Express> => {
       const upload = multer({ storage: storage });
 
       // for testing google login
-      app.get("/google", (req, res) => {
-        res.send(
-          '<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>'
-        );
-      });
-      app.get("/", async (req, res) => {
-        const accessToken = req.user["accessToken"];
-        const refreshToken = req.user["refreshToken"];
-        if (accessToken && refreshToken) {
-          try {
-            const user = jwt.verify(accessToken, process.env.JWT_SECRET);
-            const userDb = await User.findById(user["_id"]);
-            if (user === null) {
-              return res.sendStatus(404);
-            }
-            return res.status(200).send("logged in: " + userDb.name);
-          } catch (err) {
-            return res.sendStatus(500);
-          }
-        } else {
-          res.send("not logged in");
-        }
-      });
+      // app.get("/google", (req, res) => {
+      //   res.send(
+      //     '<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>'
+      //   );
+      // });
+      // app.get("/", async (req, res) => {
+      //   const accessToken = req.user["accessToken"];
+      //   const refreshToken = req.user["refreshToken"];
+      //   if (accessToken && refreshToken) {
+      //     try {
+      //       const user = jwt.verify(accessToken, process.env.JWT_SECRET);
+      //       const userDb = await User.findById(user["_id"]);
+      //       if (user === null) {
+      //         return res.sendStatus(404);
+      //       }
+      //       return res.status(200).send("logged in: " + userDb.name);
+      //     } catch (err) {
+      //       return res.sendStatus(500);
+      //     }
+      //   } else {
+      //     res.send("not logged in");
+      //   }
+      // });
     
       // paths
       app.use("/auth", upload.single("file"), authRouter);
