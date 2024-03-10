@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import User from '../model/user_model';
+import Post from '../model/post_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
@@ -214,10 +215,42 @@ const findOrCreateGoogleUser = async (email: string, name: string) => {
     }
 }
 
+const changeProfilePicture = async (req: Request, res: Response) => {
+    const name = req.body.name;
+    let photo;
+
+    // Check if req.file exists and set photo accordingly
+    if (req.file) {
+        photo = req.file.path.replace('src/public/', '');
+    }
+    try {
+        const user = await User.findOneAndUpdate(
+            { name: name },
+            { photo: photo },
+            { new: true }
+        )
+        console.log();
+        
+        if (user === null) {
+            return res.status(401).send("user not found");
+        }
+        await Post.updateMany(
+            { name: name },
+            { profilePic: photo },
+            { new: true }
+        );
+        
+        return res.status(200).send(user);
+    } catch {
+        return res.status(500);
+    }
+}
+
 
 export = {
     login,
     register,
+    changeProfilePicture, 
     logout,
     refreshToken,
     userInfo,
