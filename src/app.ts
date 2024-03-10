@@ -80,11 +80,11 @@ const initApp = (): Promise<Express> => {
       const upload = multer({ storage: storage });
 
       // for testing google login
-      // app.get("/google", (req, res) => {
-      //   res.send(
-      //     '<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>'
-      //   );
-      // });
+      app.get("/google", (req, res) => {
+        res.send(
+          '<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>'
+        );
+      });
       // app.get("/", async (req, res) => {
       //   const accessToken = req.user["accessToken"];
       //   const refreshToken = req.user["refreshToken"];
