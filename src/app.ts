@@ -40,6 +40,10 @@ const initApp = (): Promise<Express> => {
       // paths
       app.use("/auth", upload.single("file"), authRouter);
       app.use("/posts", upload.single("file"), postRouter);
+      app.get('/api/googleClientId', (req, res) => {
+        const googleClientId = process.env.GOOGLE_CLIENT_ID;
+        res.json({ clientId: googleClientId });
+      });
       // start server
       resolve(app);
     });
