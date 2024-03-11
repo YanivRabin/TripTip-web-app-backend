@@ -239,6 +239,14 @@ const changeProfilePicture = async (req: Request, res: Response) => {
     }
 }
 
+const allUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await User.find();
+        return res.status(200).send(users);
+    } catch {
+        return res.status(500);
+    }
+}
 
 export = {
     login,
@@ -247,5 +255,6 @@ export = {
     logout,
     refreshToken,
     userInfo,
-    findOrCreateGoogleUser
+    findOrCreateGoogleUser,
+    allUsers
 }

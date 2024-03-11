@@ -11,5 +11,6 @@ router.put('/changeProfilePicture',authenticate, AuthController.changeProfilePic
 router.get('/logout', AuthController.logout);
 router.get('/refreshToken', AuthController.refreshToken);
 router.get('/userInfo', authenticate, AuthController.userInfo);
+router.get('/getAllUsers', authenticate, AuthController.allUsers);
 
 export = router;
