@@ -3,7 +3,6 @@ import User from '../model/user_model';
 import Post from '../model/post_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import passport from 'passport';
 
 
 const register = async (req: Request, res: Response) => {
@@ -172,15 +171,9 @@ const userInfo = async (req: Request, res: Response) => {
     }
 }
 
-const googleLogin = async (req: Request, res: Response) => {
-    passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
-}
-
-const googleCallback = async (req: Request, res: Response) => {
-    passport.authenticate('google', { successRedirect: 'http://localhost:5173/home', failureRedirect: '/auth/googleLogin' })(req, res);
-};
-
-const findOrCreateGoogleUser = async (email: string, name: string) => {
+const findOrCreateGoogleUser = async (req: Request, res: Response) => {
+    const email = req.body.email;
+    const name = req.body.name;
     try {
         // Check if the user already exists in your database using email
         let user = await User.findOne({ email: email });
@@ -209,7 +202,7 @@ const findOrCreateGoogleUser = async (email: string, name: string) => {
         user.tokens = [];
         user.tokens.push(refreshToken);
         await user.save();
-        return { 'accessToken': accessToken, 'refreshToken': refreshToken };
+        return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
     } catch (error) {
         console.error('Error in Google callback:', error);
     }
@@ -254,7 +247,5 @@ export = {
     logout,
     refreshToken,
     userInfo,
-    googleLogin,
-    googleCallback,
     findOrCreateGoogleUser
 }
