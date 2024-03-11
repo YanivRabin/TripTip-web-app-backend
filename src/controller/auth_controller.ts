@@ -3,6 +3,7 @@ import User from '../model/user_model';
 import Post from '../model/post_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import path from "path";
 
 
 const register = async (req: Request, res: Response) => {
@@ -214,7 +215,8 @@ const changeProfilePicture = async (req: Request, res: Response) => {
 
     // Check if req.file exists and set photo accordingly
     if (req.file) {
-        photo = req.file.path.replace('src/public/', '');
+        const relativePath = path.relative('src/public/image', req.file.path);
+        photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
     try {
         const user = await User.findOneAndUpdate(
@@ -222,7 +224,6 @@ const changeProfilePicture = async (req: Request, res: Response) => {
             { photo: photo },
             { new: true }
         )
-        console.log();
         
         if (user === null) {
             return res.status(401).send("user not found");

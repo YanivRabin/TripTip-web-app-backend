@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Post from '../model/post_model';
 import User from '../model/user_model';
+import path from "path";
 
 
 const getAllPosts = async (req: Request, res: Response) => {
@@ -43,8 +44,8 @@ const createPost = async (req: Request, res: Response) => {
     let photo;
 
     if (req.file) {
-        photo = req.file.path.replace('src/public/', '');
-        // photo = req.file.path.replace('src\\public\\', ''); // for windows
+        const relativePath = path.relative('src/public/image', req.file.path);
+        photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
         
     if (!description || !photo) {
@@ -66,10 +67,11 @@ const createPost = async (req: Request, res: Response) => {
         user.posts.push(post);
         await user.save();
         return res.status(200).send(post);
-    } catch {
-        console.log("error");
-        return res.status(500);
+    } catch (error) {
+        console.error("Error creating post:", error);
+        return res.status(500).send({ error: "An error occurred while creating the post" });
     }
+    
 }
 
 const updatePost = async (req: Request, res: Response) => {
@@ -79,7 +81,8 @@ const updatePost = async (req: Request, res: Response) => {
 
     // Check if req.file exists and set photo accordingly
     if (req.file) {
-        photo = req.file.path.replace('src/public/', '');
+        const relativePath = path.relative('src/public/image', req.file.path);
+        photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
