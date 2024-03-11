@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import authRouter from "./routes/auth_route";
 import postRouter from "./routes/post_route";
-import messageRouter from "./routes/message_route";
+import chatController from "./controller/chat_controller";
 import multer from "multer";
 import path from "path";
 import cors from "cors";
@@ -13,13 +13,37 @@ import { Server, Socket } from "socket.io";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, 
-  {
-    cors: { 
-      origin: "http://localhost:5173",
-      methods: ["GET", "POST"]
-      }});
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
 dotenv.config();
+
+//chat
+io.on("connection", (socket: Socket) => {
+  socket.on("join-room", async (selectedUser: string, currentUser: string) => {
+    const roomParticipants = [currentUser, selectedUser].sort();
+    const roomId = `room_${roomParticipants[0]}_${roomParticipants[1]}`;
+    socket.join(roomId);
+    console.log(`Room created: ${roomId}`);
+    io.to(roomId).emit("roomCreated", roomId); // Emit the event immediately after creating the room
+
+    // Get all messages from the database
+    const messages = await chatController.getMessages(roomId);
+    io.to(roomId).emit("chat-history", messages); // Send chat history to the client as an array
+  });
+
+  socket.on(
+    "send-message",
+    (data: { to: string; from: string; msg: string }) => {
+      chatController.addMessage(data.to, data.from, data.msg);
+      // Broadcast message to everyone in the room
+      io.to(data.to).emit("new-message", data);
+    }
+  );
+});
 
 const initApp = (): Promise<http.Server> => {
   const promise = new Promise<http.Server>((resolve) => {
@@ -50,17 +74,9 @@ const initApp = (): Promise<http.Server> => {
       // paths
       app.use("/auth", upload.single("file"), authRouter);
       app.use("/posts", upload.single("file"), postRouter);
-      app.use("/messages", messageRouter);
-      app.get('/api/googleClientId', (req, res) => {
+      app.get("/api/googleClientId", (req, res) => {
         const googleClientId = process.env.GOOGLE_CLIENT_ID;
         res.json({ clientId: googleClientId });
-      });
-      //chat
-      io.on("connection", (socket: Socket) => {
-        console.log("a user connected");
-        socket.on("chat message", (msg) => {
-          io.emit("chat message", msg);
-        });
       });
       // start server
       resolve(server);
