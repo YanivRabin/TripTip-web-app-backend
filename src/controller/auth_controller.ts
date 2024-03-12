@@ -81,7 +81,7 @@ const login = async (req: Request, res: Response) => {
         user.tokens.push(refreshToken);
         await user.save();
         // send tokens to client
-        return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+        return res.status(200).send({'user': user,  'accessToken': accessToken, 'refreshToken': refreshToken });
     } catch (err) {
         return res.status(500);
     }
@@ -203,7 +203,7 @@ const findOrCreateGoogleUser = async (req: Request, res: Response) => {
         user.tokens = [];
         user.tokens.push(refreshToken);
         await user.save();
-        return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+        return res.status(200).send({'user': user, 'accessToken': accessToken, 'refreshToken': refreshToken });
     } catch (error) {
         console.error('Error in Google callback:', error);
     }
