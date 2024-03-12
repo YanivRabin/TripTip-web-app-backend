@@ -48,7 +48,7 @@ const createPost = async (req: Request, res: Response) => {
         photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
         
-    if (!description || !photo) {
+    if (!description) {
         return res.status(400).send("description or photo is required");
     }
     try {

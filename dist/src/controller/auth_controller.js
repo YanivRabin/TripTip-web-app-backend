@@ -15,7 +15,7 @@ const user_model_1 = __importDefault(require("../model/user_model"));
 const post_model_1 = __importDefault(require("../model/post_model"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const passport_1 = __importDefault(require("passport"));
+const path_1 = __importDefault(require("path"));
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const email = req.body.email;
     const password = req.body.password;
@@ -26,8 +26,12 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // check if user exist
         const existUser = yield user_model_1.default.findOne({ email: email });
+        const existUser2 = yield user_model_1.default.findOne({ name: name });
+        if (existUser2 != null) {
+            return res.status(406).send("Name already exists - choose a different name");
+        }
         if (existUser != null) {
-            return res.status(406).send("email already exists");
+            return res.status(406).send("Email already exists");
         }
         // encrypt password and save user
         const salt = yield bcrypt_1.default.genSalt(10);
@@ -77,7 +81,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         user.tokens.push(refreshToken);
         yield user.save();
         // send tokens to client
-        return res.status(200).send({ 'accessToken': accessToken, 'refreshToken': refreshToken });
+        return res.status(200).send({ 'user': user, 'accessToken': accessToken, 'refreshToken': refreshToken });
     }
     catch (err) {
         return res.status(500);
@@ -91,7 +95,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.sendStatus(401);
     }
     // check if token is valid
-    jsonwebtoken_1.default.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => __awaiter(void 0, void 0, void 0, function* () {
+    jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET, (err, user) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // check if user exist
             const userDb = yield user_model_1.default.findById(user._id);
@@ -106,6 +110,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 userDb.tokens = userDb.tokens.filter(t => t !== token);
             }
             yield userDb.save();
+            console.log("userDb: ", userDb);
             return res.status(200).send(userDb);
         }
         catch (err) {
@@ -162,13 +167,9 @@ const userInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.sendStatus(500);
     }
 });
-const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res);
-});
-const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    passport_1.default.authenticate('google', { successRedirect: '/', failureRedirect: '/auth/googleLogin' })(req, res);
-});
-const findOrCreateGoogleUser = (email, name) => __awaiter(void 0, void 0, void 0, function* () {
+const findOrCreateGoogleUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const email = req.body.email;
+    const name = req.body.name;
     try {
         // Check if the user already exists in your database using email
         let user = yield user_model_1.default.findOne({ email: email });
@@ -190,7 +191,7 @@ const findOrCreateGoogleUser = (email, name) => __awaiter(void 0, void 0, void 0
         user.tokens = [];
         user.tokens.push(refreshToken);
         yield user.save();
-        return { 'accessToken': accessToken, 'refreshToken': refreshToken };
+        return res.status(200).send({ 'user': user, 'accessToken': accessToken, 'refreshToken': refreshToken });
     }
     catch (error) {
         console.error('Error in Google callback:', error);
@@ -201,11 +202,11 @@ const changeProfilePicture = (req, res) => __awaiter(void 0, void 0, void 0, fun
     let photo;
     // Check if req.file exists and set photo accordingly
     if (req.file) {
-        photo = req.file.path.replace('src/public/', '');
+        const relativePath = path_1.default.relative('src/public/image', req.file.path);
+        photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
     try {
         const user = yield user_model_1.default.findOneAndUpdate({ name: name }, { photo: photo }, { new: true });
-        console.log();
         if (user === null) {
             return res.status(401).send("user not found");
         }
@@ -216,6 +217,15 @@ const changeProfilePicture = (req, res) => __awaiter(void 0, void 0, void 0, fun
         return res.status(500);
     }
 });
+const allUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const users = yield user_model_1.default.find();
+        return res.status(200).send(users);
+    }
+    catch (_b) {
+        return res.status(500);
+    }
+});
 module.exports = {
     login,
     register,
@@ -223,8 +233,7 @@ module.exports = {
     logout,
     refreshToken,
     userInfo,
-    googleLogin,
-    googleCallback,
-    findOrCreateGoogleUser
+    findOrCreateGoogleUser,
+    allUsers
 };
 //# sourceMappingURL=auth_controller.js.map

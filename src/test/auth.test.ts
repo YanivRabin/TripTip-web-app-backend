@@ -1,11 +1,11 @@
 import request from 'supertest';
 import initApp from '../app';
 import mongoose from 'mongoose';
-import { Express } from 'express';
 import User from '../model/user_model';
+import http from 'http';
 
 
-let app: Express;
+let app: http.Server;
 let accessToken: string = "";
 let refreshToken: string = "";
 const user = {
@@ -122,7 +122,7 @@ describe("-- Auth tests --", () => {
     test("test logout - success", async () => {
         const res = await request(app)
             .get("/auth/logout")
-            .set("Authorization", "Bearer " + refreshToken);
+            .set("Authorization", "Bearer " + accessToken);
         expect(res.statusCode).toBe(200);
         refreshToken = res.body.refreshToken;
         const res2 = await request(app)

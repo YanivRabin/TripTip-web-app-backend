@@ -117,7 +117,7 @@ describe("-- Auth tests --", () => {
     test("test logout - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .get("/auth/logout")
-            .set("Authorization", "Bearer " + refreshToken);
+            .set("Authorization", "Bearer " + accessToken);
         expect(res.statusCode).toBe(200);
         refreshToken = res.body.refreshToken;
         const res2 = yield (0, supertest_1.default)(app)

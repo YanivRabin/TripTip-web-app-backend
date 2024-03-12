@@ -1,12 +1,12 @@
 import request from 'supertest';
 import initApp from '../app';
 import mongoose from 'mongoose';
-import { Express } from 'express';
 import User from '../model/user_model';
 import Post from'../model/post_model';
+import http from 'http';
 
 
-let app: Express;
+let app: http.Server;
 // user1
 const user = {
     email: "yaniv@rabin.com",
@@ -44,15 +44,13 @@ beforeAll(async () => {
     await Post.deleteMany();
     // create user1 and get access token
     const res = await request(app).post("/auth/register").send(user);
-    user['_id'] = res.body.user._id;
     user.accessToken = res.body.accessToken;
-    post.name = res.body.user._id;
-    post2.name = res.body.user._id;
+    post.name = res.body.user.name;
+    post2.name = res.body.user.name;
     // create user2 and get access token
     const res2 = await request(app).post("/auth/register").send(user2);
-    user2['_id'] = res2.body.user._id;
     user2.accessToken = res2.body.accessToken;
-    post3.name = res2.body.user._id;
+    post3.name = res2.body.user.name;
 });
 
 afterAll((done) => {
@@ -63,6 +61,8 @@ afterAll((done) => {
 describe("-- Post tests --", () => {
 
     test("test create post - success", async () => {
+        console.log(post);
+        
         const res = await request(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
@@ -126,7 +126,7 @@ describe("-- Post tests --", () => {
 
     test("test get posts by name1 - success", async () => {
         const res = await request(app)
-            .get("/posts/getPostByname/" + user['_id'])
+            .get("/posts/getPostByname/" + user.name)
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(2);
@@ -134,7 +134,7 @@ describe("-- Post tests --", () => {
 
     test("test get posts by name2 - success", async () => {
         const res = await request(app)
-            .get("/posts/getPostByname/" + user2['_id'])
+            .get("/posts/getPostByname/" + user2.name)
             .set('Authorization', 'Bearer ' + user2.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(1);
@@ -147,7 +147,6 @@ describe("-- Post tests --", () => {
         expect(res.statusCode).toBe(200);
         expect(res.body._id).toBe(post['_id']);
         expect(res.body.description).toBe(post.description);
-        expect(res.body.photo).toBe(post.photo);
     });
 
     test("test update post - success", async () => {

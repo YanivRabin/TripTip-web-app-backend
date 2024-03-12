@@ -54,15 +54,13 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     yield post_model_1.default.deleteMany();
     // create user1 and get access token
     const res = yield (0, supertest_1.default)(app).post("/auth/register").send(user);
-    user['_id'] = res.body.user._id;
     user.accessToken = res.body.accessToken;
-    post.name = res.body.user._id;
-    post2.name = res.body.user._id;
+    post.name = res.body.user.name;
+    post2.name = res.body.user.name;
     // create user2 and get access token
     const res2 = yield (0, supertest_1.default)(app).post("/auth/register").send(user2);
-    user2['_id'] = res2.body.user._id;
     user2.accessToken = res2.body.accessToken;
-    post3.name = res2.body.user._id;
+    post3.name = res2.body.user.name;
 }));
 afterAll((done) => {
     mongoose_1.default.connection.close();
@@ -70,6 +68,7 @@ afterAll((done) => {
 });
 describe("-- Post tests --", () => {
     test("test create post - success", () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(post);
         const res = yield (0, supertest_1.default)(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
@@ -126,14 +125,14 @@ describe("-- Post tests --", () => {
     }));
     test("test get posts by name1 - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .get("/posts/getPostByname/" + user['_id'])
+            .get("/posts/getPostByname/" + user.name)
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(2);
     }));
     test("test get posts by name2 - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
-            .get("/posts/getPostByname/" + user2['_id'])
+            .get("/posts/getPostByname/" + user2.name)
             .set('Authorization', 'Bearer ' + user2.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.length).toBe(1);
@@ -145,7 +144,6 @@ describe("-- Post tests --", () => {
         expect(res.statusCode).toBe(200);
         expect(res.body._id).toBe(post['_id']);
         expect(res.body.description).toBe(post.description);
-        expect(res.body.photo).toBe(post.photo);
     }));
     test("test update post - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)

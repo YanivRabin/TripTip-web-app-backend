@@ -15,53 +15,52 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const body_parser_1 = __importDefault(require("body-parser"));
-const passport_1 = __importDefault(require("passport"));
-const express_session_1 = __importDefault(require("express-session"));
-const passport_google_oauth20_1 = __importDefault(require("passport-google-oauth20"));
 const auth_route_1 = __importDefault(require("./routes/auth_route"));
 const post_route_1 = __importDefault(require("./routes/post_route"));
+const chat_controller_1 = __importDefault(require("./controller/chat_controller"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
-const auth_controller_1 = __importDefault(require("./controller/auth_controller"));
-const user_model_1 = __importDefault(require("./model/user_model"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const cors_1 = __importDefault(require("cors"));
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
 const app = (0, express_1.default)();
-const GoogleStrategy = passport_google_oauth20_1.default.Strategy;
+const server = http_1.default.createServer(app);
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"],
+    },
+});
 dotenv_1.default.config();
+//chat
+io.on("connection", (socket) => {
+    socket.on("join-room", (selectedUser, currentUser) => __awaiter(void 0, void 0, void 0, function* () {
+        const roomParticipants = [currentUser, selectedUser].sort();
+        const roomId = `room_${roomParticipants[0]}_${roomParticipants[1]}`;
+        socket.join(roomId);
+        console.log(`Room created: ${roomId}`);
+        io.to(roomId).emit("roomCreated", roomId); // Emit the event immediately after creating the room
+        // Get all messages from the database
+        const messages = yield chat_controller_1.default.getMessages(roomId);
+        io.to(roomId).emit("chat-history", messages); // Send chat history to the client as an array
+    }));
+    socket.on("send-message", (data) => {
+        chat_controller_1.default.addMessage(data.to, data.from, data.msg);
+        // Broadcast message to everyone in the room
+        io.to(data.to).emit("new-message", data);
+    });
+});
 const initApp = () => {
     const promise = new Promise((resolve) => {
         const db = mongoose_1.default.connection;
         db.on("error", (error) => console.error(error));
         db.once("open", () => console.log("connected to mongo"));
         mongoose_1.default.connect(process.env.DATABASE_URL).then(() => {
+            // express and react connection with cors
             app.use((0, cors_1.default)());
             // body parser
             app.use(body_parser_1.default.urlencoded({ extended: true, limit: "1mb" }));
             app.use(body_parser_1.default.json());
-            ``;
-            // passport and session
-            app.use((0, express_session_1.default)({
-                secret: process.env.SESSION_SECRET,
-                resave: false,
-                saveUninitialized: true,
-            }));
-            app.use(passport_1.default.initialize());
-            app.use(passport_1.default.session());
-            passport_1.default.serializeUser((user, done) => {
-                done(null, user);
-            });
-            passport_1.default.deserializeUser((user, done) => {
-                done(null, user);
-            });
-            passport_1.default.use(new GoogleStrategy({
-                clientID: process.env.GOOGLE_CLIENT_ID,
-                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                callbackURL: process.env.GOOGLE_CALLBACK_URL,
-            }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
-                const user = yield auth_controller_1.default.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
-                return done(null, user);
-            })));
             // static files
             app.use(express_1.default.static("src/public"));
             // multer config
@@ -74,35 +73,15 @@ const initApp = () => {
                 },
             });
             const upload = (0, multer_1.default)({ storage: storage });
-            // for testing google login
-            app.get("/google", (req, res) => {
-                res.send('<a href="http://localhost:3000/auth/googleLogin">Login with Google</a>');
-            });
-            app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-                const accessToken = req.user["accessToken"];
-                const refreshToken = req.user["refreshToken"];
-                if (accessToken && refreshToken) {
-                    try {
-                        const user = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
-                        const userDb = yield user_model_1.default.findById(user["_id"]);
-                        if (user === null) {
-                            return res.sendStatus(404);
-                        }
-                        return res.status(200).send("logged in: " + userDb.name);
-                    }
-                    catch (err) {
-                        return res.sendStatus(500);
-                    }
-                }
-                else {
-                    res.send("not logged in");
-                }
-            }));
             // paths
             app.use("/auth", upload.single("file"), auth_route_1.default);
             app.use("/posts", upload.single("file"), post_route_1.default);
+            app.get("/api/googleClientId", (req, res) => {
+                const googleClientId = process.env.GOOGLE_CLIENT_ID;
+                res.json({ clientId: googleClientId });
+            });
             // start server
-            resolve(app);
+            resolve(server);
         });
     });
     return promise;

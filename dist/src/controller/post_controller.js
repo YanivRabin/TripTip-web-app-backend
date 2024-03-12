@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const post_model_1 = __importDefault(require("../model/post_model"));
 const user_model_1 = __importDefault(require("../model/user_model"));
+const path_1 = __importDefault(require("path"));
 const getAllPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const posts = yield post_model_1.default.find();
@@ -52,9 +53,10 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const description = req.body.description;
     let photo;
     if (req.file) {
-        photo = req.file.path.replace('src/public/', '');
+        const relativePath = path_1.default.relative('src/public/image', req.file.path);
+        photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
-    if (!description || !photo) {
+    if (!description) {
         return res.status(400).send("description or photo is required");
     }
     try {
@@ -74,9 +76,9 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield user.save();
         return res.status(200).send(post);
     }
-    catch (_d) {
-        console.log("error");
-        return res.status(500);
+    catch (error) {
+        console.error("Error creating post:", error);
+        return res.status(500).send({ error: "An error occurred while creating the post" });
     }
 });
 const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -85,7 +87,8 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     let photo;
     // Check if req.file exists and set photo accordingly
     if (req.file) {
-        photo = req.file.path.replace('src/public/', '');
+        const relativePath = path_1.default.relative('src/public/image', req.file.path);
+        photo = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for consistency
     }
     if (!description && !photo) {
         return res.status(400).send("description or photo is required");
@@ -104,7 +107,7 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         return res.status(200).send(post);
     }
-    catch (_e) {
+    catch (_d) {
         return res.status(500);
     }
 });
@@ -123,7 +126,7 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield user.save();
         return res.status(200).send("post deleted");
     }
-    catch (_f) {
+    catch (_e) {
         return res.status(500);
     }
 });
@@ -143,7 +146,7 @@ const commentPost = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield post.save();
         return res.status(200).send(post);
     }
-    catch (_g) {
+    catch (_f) {
         return res.status(500);
     }
 });
@@ -156,7 +159,7 @@ const getPostComments = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         return res.status(200).send(post.comments);
     }
-    catch (_h) {
+    catch (_g) {
         return res.status(500);
     }
 });
