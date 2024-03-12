@@ -85,14 +85,16 @@ const auth_middleware_1 = __importDefault(require("../common/auth_middleware"));
 */
 // #endregion 
 // #endregion
+// #region API requests
 // #region register POST request
 /**
  * Registers a new user.
  *
  * @swagger
- * /register:
+ * /auth/register:
  *   post:
  *     summary: Register a new user
+ *     tags: [Authentication]
  *     description: Registers a new user with the provided email, password, and name.
  *     requestBody:
  *       required: true
@@ -124,9 +126,11 @@ const auth_middleware_1 = __importDefault(require("../common/auth_middleware"));
  *                 accessToken:
  *                   type: string
  *                   description: An access token for the user session.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
  *                 refreshToken:
  *                   type: string
  *                   description: A refresh token for the user session.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
  *       400:
  *         description: Bad request
  *         content:
@@ -146,13 +150,277 @@ const auth_middleware_1 = __importDefault(require("../common/auth_middleware"));
  */
 router.post('/register', auth_controller_1.default.register);
 // #endregion
+// #region login POST request
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticates a user by email and password and provides access and refresh tokens.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: User's password
+ *     responses:
+ *       200:
+ *         description: User authenticated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 accessToken:
+ *                   type: string
+ *                   description: Access token for authentication
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Refresh token for authentication
+ *       400:
+ *         description: Bad request, missing email or password
+ *       401:
+ *         description: Unauthorized, email or password incorrect
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/login', auth_controller_1.default.login);
+// #endregion
+// #region googleLogin POST request
+/**
+ * @swagger
+ * /auth/googleLogin:
+ *   post:
+ *     summary: Find or create Google user
+ *     description: Finds or creates a user based on Google OAuth authentication.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *               name:
+ *                 type: string
+ *                 description: User's name
+ *     responses:
+ *       200:
+ *         description: User found or created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 accessToken:
+ *                   type: string
+ *                   description: Access token for authentication
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Refresh token for authentication
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/googleLogin', auth_controller_1.default.findOrCreateGoogleUser);
-router.put('/changeProfilePicture', auth_middleware_1.default, auth_controller_1.default.changeProfilePicture);
-router.put('/changeName', auth_middleware_1.default, auth_controller_1.default.changeName);
+// #endregion
+// #region logout GET request
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     description: Logs out a user by removing the provided JWT token from the user's tokens list.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized, token not provided
+ *       403:
+ *         description: Forbidden, user not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/logout', auth_controller_1.default.logout);
+// #endregion
+// #region refreshToken GET request
+/**
+ * @swagger
+ * /auth/refreshToken:
+ *   post:
+ *     summary: Refresh access token
+ *     description: Refreshes the access token using the refresh token provided.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Access token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: Refreshed access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: New refresh token
+ *       401:
+ *         description: Unauthorized, token not provided
+ *       403:
+ *         description: Forbidden, invalid request or token
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/refreshToken', auth_controller_1.default.refreshToken);
+// #endregion
+// #region userInfo GET request
+/**
+ * @swagger
+ * /auth/userInfo:
+ *   get:
+ *     summary: Get user information
+ *     description: Retrieves information about the authenticated user.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Not found, user not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/userInfo', auth_middleware_1.default, auth_controller_1.default.userInfo);
+// #endregion
+// #region allUsers GET request
+/**
+ * @swagger
+ * /auth/getAllUsers:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieves information about all users.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Users information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/getAllUsers', auth_middleware_1.default, auth_controller_1.default.allUsers);
+// #endregion
+// #region changeProfilePicture PUT request
+/**
+ * @swagger
+ * /auth/changeProfilePicture:
+ *   put:
+ *     summary: Change profile picture
+ *     description: Changes the profile picture of a user.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User's name
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file for the new profile picture
+ *     responses:
+ *       200:
+ *         description: Profile picture changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized, user not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/changeProfilePicture', auth_middleware_1.default, auth_controller_1.default.changeProfilePicture);
+// #endregion
+// #region changeName PUT request
+/**
+ * @swagger
+ * /auth/changeName:
+ *   put:
+ *     summary: Change user name
+ *     description: Changes the name of a user.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Current name of the user
+ *               newName:
+ *                 type: string
+ *                 description: New name to be set for the user
+ *     responses:
+ *       200:
+ *         description: User name changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized, user not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/changeName', auth_middleware_1.default, auth_controller_1.default.changeName);
 module.exports = router;
 //# sourceMappingURL=auth_route.js.map

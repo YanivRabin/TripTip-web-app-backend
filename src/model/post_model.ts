@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 
-const userSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema({
     name: { type: String, require: true },
     description: { type: String },
     photo: { type: String },
@@ -12,4 +12,4 @@ const userSchema = new mongoose.Schema({
     }]
 });
 
-export = mongoose.model('Post', userSchema);
+export = mongoose.model('Post', postSchema);

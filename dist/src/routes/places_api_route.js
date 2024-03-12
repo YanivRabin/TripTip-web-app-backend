@@ -5,6 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const places_api_controller_1 = require("../controller/places_api_controller");
 const router = express_1.default.Router();
+// #region route configuration
+/**
+ * @swagger
+ * tags:
+ *   name: Places API
+ *   description: The Places API
+ */
+// #endregion
 // #region review GET request 
 /**
  * Retrieves a random location with reviews.
@@ -13,6 +21,7 @@ const router = express_1.default.Router();
  * /api/review:
  *   get:
  *     summary: Retrieve a random location with reviews
+ *     tags: [Places API]
  *     description: |
  *       Retrieves a random location from a predefined list of locations with reviews.
  *       Fetches tips for the selected location using the Google Places API.
