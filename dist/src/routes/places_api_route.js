@@ -10,7 +10,7 @@ const router = express_1.default.Router();
  * Retrieves a random location with reviews.
  *
  * @swagger
- * /random-location-with-reviews:
+ * /api/review:
  *   get:
  *     summary: Retrieve a random location with reviews
  *     description: |

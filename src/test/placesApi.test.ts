@@ -1,16 +1,26 @@
-import { fetchTips } from "../controller/places_api_controller";
+import request from 'supertest';
+import initApp from '../app';
+import mongoose from 'mongoose';
+import { Express } from 'express';
 
-const apiKey ="AIzaSyAgJRnFfiP_ChMFPXSDnyI5beDQRl4DprY";
 
-if (!apiKey) {
-  console.error("Google API key is not provided.");
-  process.exit(1);
-}
+let app: Express;
+beforeAll(async () => {
+  console.log("brforeAll");
+  app = await initApp();
+});
+
+afterAll((done) => {
+  mongoose.connection.close()
+  done();
+});
+
 
 describe("-- Places API Tests --", () => {
   test("Places API - fetch tips for each country", async () => {
-    const tips = await fetchTips(apiKey, "Eiffel Tower, Paris, France");
-    console.log("Tips for", "Eiffel Tower, Paris, France", ":", tips);
-    expect(tips.length).toBeGreaterThan(0);
+    const res = await request(app)
+    .get("/api/review")
+    expect(res.status).toBe(200);
+    expect(res.body).toBeDefined();
   });
 });

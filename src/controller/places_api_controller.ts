@@ -248,9 +248,7 @@ export async function fetchTips(
         },
       }
     );
-
-    console.log("Details response:", detailsResponse.data);
-
+    
     // Extracting tips/reviews
     const reviews: Review[] = detailsResponse.data.result.reviews;
     const tips = reviews.map((review) => review.text);

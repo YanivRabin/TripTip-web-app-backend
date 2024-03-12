@@ -236,7 +236,6 @@ function fetchTips(apiKey, placeName) {
                     fields: "name,reviews",
                 },
             });
-            console.log("Details response:", detailsResponse.data);
             // Extracting tips/reviews
             const reviews = detailsResponse.data.result.reviews;
             const tips = reviews.map((review) => review.text);

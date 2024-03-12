@@ -15,16 +15,14 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const body_parser_1 = __importDefault(require("body-parser"));
-const passport_1 = __importDefault(require("passport"));
-const express_session_1 = __importDefault(require("express-session"));
 const passport_google_oauth20_1 = __importDefault(require("passport-google-oauth20"));
 const auth_route_1 = __importDefault(require("./routes/auth_route"));
 const post_route_1 = __importDefault(require("./routes/post_route"));
 const upload_route_1 = __importDefault(require("./routes/upload_route"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
-const auth_controller_1 = __importDefault(require("./controller/auth_controller"));
 const user_model_1 = __importDefault(require("./model/user_model"));
+const places_api_route_1 = __importDefault(require("./routes/places_api_route"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
@@ -42,27 +40,37 @@ const initApp = () => {
             app.use(body_parser_1.default.json());
             ``;
             // passport and session
-            app.use((0, express_session_1.default)({
-                secret: process.env.SESSION_SECRET,
-                resave: false,
-                saveUninitialized: true,
-            }));
-            app.use(passport_1.default.initialize());
-            app.use(passport_1.default.session());
-            passport_1.default.serializeUser((user, done) => {
-                done(null, user);
-            });
-            passport_1.default.deserializeUser((user, done) => {
-                done(null, user);
-            });
-            passport_1.default.use(new GoogleStrategy({
-                clientID: process.env.GOOGLE_CLIENT_ID,
-                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                callbackURL: process.env.GOOGLE_CALLBACK_URL,
-            }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
-                const user = yield auth_controller_1.default.findOrCreateGoogleUser(profile.emails[0].value, profile.displayName);
-                return done(null, user);
-            })));
+            // app.use(
+            //   session({
+            //     secret: process.env.SESSION_SECRET,
+            //     resave: false,
+            //     saveUninitialized: true,
+            //   })
+            // );
+            // app.use(passport.initialize());
+            // app.use(passport.session());
+            // passport.serializeUser((user, done) => {
+            //   done(null, user);
+            // });
+            // passport.deserializeUser((user, done) => {
+            //   done(null, user);
+            // });
+            // passport.use(
+            //   new GoogleStrategy(
+            //     {
+            //       clientID: process.env.GOOGLE_CLIENT_ID,
+            //       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            //       callbackURL: process.env.GOOGLE_CALLBACK_URL,
+            //     },
+            //     async (accessToken, refreshToken, profile, done) => {
+            //       const user = await auth_controller.findOrCreateGoogleUser(
+            //         profile.emails[0].value,
+            //         profile.displayName
+            //       );
+            //       return done(null, user);
+            //     }
+            //   )
+            // );
             // static files
             app.use(express_1.default.static("src/public"));
             // multer config
@@ -114,6 +122,7 @@ const initApp = () => {
             // paths
             app.use("/auth", auth_route_1.default);
             app.use("/posts", post_route_1.default);
+            app.use("/api", places_api_route_1.default);
             app.use("/uploads", upload.single("file"), upload_route_1.default);
             // start server
             resolve(app);

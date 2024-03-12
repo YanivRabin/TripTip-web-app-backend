@@ -8,18 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const places_api_controller_1 = require("../controller/places_api_controller");
-const apiKey = "AIzaSyAgJRnFfiP_ChMFPXSDnyI5beDQRl4DprY";
-if (!apiKey) {
-    console.error("Google API key is not provided.");
-    process.exit(1);
-}
+const supertest_1 = __importDefault(require("supertest"));
+const app_1 = __importDefault(require("../app"));
+const mongoose_1 = __importDefault(require("mongoose"));
+let app;
+beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("brforeAll");
+    app = yield (0, app_1.default)();
+}));
+afterAll((done) => {
+    mongoose_1.default.connection.close();
+    done();
+});
 describe("-- Places API Tests --", () => {
     test("Places API - fetch tips for each country", () => __awaiter(void 0, void 0, void 0, function* () {
-        const tips = yield (0, places_api_controller_1.fetchTips)(apiKey, "Eiffel Tower, Paris, France");
-        console.log("Tips for", "Eiffel Tower, Paris, France", ":", tips);
-        expect(true).toBe(true);
+        const res = yield (0, supertest_1.default)(app)
+            .get("/api/review");
+        expect(res.status).toBe(200);
+        expect(res.body).toBeDefined();
     }));
 });
 //# sourceMappingURL=placesApi.test.js.map
