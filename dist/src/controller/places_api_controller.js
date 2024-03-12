@@ -208,8 +208,8 @@ const locationsWithReviews = [
 const getRandomLocatonWithReviews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
-        const tips = yield fetchTips(apiKey, locationsWithReviews[Math.floor(Math.random() * locationsWithReviews.length)]);
-        return res.status(200).send(tips);
+        const data = yield fetchTips(apiKey, locationsWithReviews[Math.floor(Math.random() * locationsWithReviews.length)]);
+        return res.status(200).send(data);
     }
     catch (_a) {
         return res.status(400);
@@ -242,6 +242,7 @@ function fetchTips(apiKey, placeName) {
             const data = {
                 htmlRef: response.data.results[0].photos[0].html_attributions[0],
                 tips: tips,
+                placeName: placeName
             };
             return data;
         }

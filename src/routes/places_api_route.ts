@@ -2,6 +2,18 @@ import express from 'express';
 import {getRandomLocatonWithReviews} from '../controller/places_api_controller';
 const router = express.Router();
 
+
+// #region route configuration
+/**
+ * @swagger
+ * tags:
+ *   name: Places API
+ *   description: The Places API
+ */
+
+// #endregion
+
+
 // #region review GET request 
 /**
  * Retrieves a random location with reviews.
@@ -10,6 +22,7 @@ const router = express.Router();
  * /api/review:
  *   get:
  *     summary: Retrieve a random location with reviews
+ *     tags: [Places API]
  *     description: |
  *       Retrieves a random location from a predefined list of locations with reviews.
  *       Fetches tips for the selected location using the Google Places API.
