@@ -68,7 +68,6 @@ afterAll((done) => {
 });
 describe("-- Post tests --", () => {
     test("test create post - success", () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(post);
         const res = yield (0, supertest_1.default)(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)

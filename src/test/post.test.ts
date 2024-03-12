@@ -61,8 +61,6 @@ afterAll((done) => {
 describe("-- Post tests --", () => {
 
     test("test create post - success", async () => {
-        console.log(post);
-        
         const res = await request(app)
             .post("/posts/createPost")
             .set('Authorization', 'Bearer ' + user.accessToken)
