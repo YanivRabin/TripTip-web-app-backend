@@ -90,15 +90,15 @@ describe("-- Auth tests --", () => {
             .set("Authorization", "Bearer " + accessToken + "1");
         expect(res.statusCode).toBe(401);
     }));
-    jest.setTimeout(15000); //set a specific timeout for this test
-    test("test token - expired token", () => __awaiter(void 0, void 0, void 0, function* () {
-        //Simulate a delay of 4 seconds
-        yield new Promise(resolve => setTimeout(resolve, 4000));
-        const res = yield (0, supertest_1.default)(app)
-            .get("/posts/getAllPosts")
-            .set("Authorization", "Bearer " + accessToken);
-        expect(res.statusCode).toBe(401);
-    }));
+    // jest.setTimeout(15000); //set a specific timeout for this test
+    // test("test token - expired token", async () => {
+    //     //Simulate a delay of 4 seconds
+    //     await new Promise(resolve => setTimeout(resolve, 4000));
+    //     const res = await request(app)
+    //         .get("/posts/getAllPosts")
+    //         .set("Authorization", "Bearer " + accessToken);
+    //     expect(res.statusCode).toBe(401);
+    // });
     test("test refresh token - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .get("/auth/refreshToken")

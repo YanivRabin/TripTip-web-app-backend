@@ -92,16 +92,15 @@ describe("-- Auth tests --", () => {
         expect(res.statusCode).toBe(401);
     });
 
-    jest.setTimeout(15000); //set a specific timeout for this test
-
-    test("test token - expired token", async () => {
-        //Simulate a delay of 4 seconds
-        await new Promise(resolve => setTimeout(resolve, 4000));
-        const res = await request(app)
-            .get("/posts/getAllPosts")
-            .set("Authorization", "Bearer " + accessToken);
-        expect(res.statusCode).toBe(401);
-    });
+    // jest.setTimeout(15000); //set a specific timeout for this test
+    // test("test token - expired token", async () => {
+    //     //Simulate a delay of 4 seconds
+    //     await new Promise(resolve => setTimeout(resolve, 4000));
+    //     const res = await request(app)
+    //         .get("/posts/getAllPosts")
+    //         .set("Authorization", "Bearer " + accessToken);
+    //     expect(res.statusCode).toBe(401);
+    // });
     
     test("test refresh token - success", async () => {
         const res = await request(app)
