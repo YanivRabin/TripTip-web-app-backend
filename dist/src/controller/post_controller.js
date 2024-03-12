@@ -33,6 +33,7 @@ const getPostsByOwner = (req, res) => __awaiter(void 0, void 0, void 0, function
     catch (_b) {
         return res.status(400);
     }
+    // add 500 error : Internal server error
 });
 const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

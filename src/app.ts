@@ -12,6 +12,7 @@ import multer from "multer";
 import path from "path";
 import auth_controller from "./controller/auth_controller";
 import User from "./model/user_model";
+import placesRouter from "./routes/places_api_route";
 
 import jwt from "jsonwebtoken";
 import cors from "cors";
@@ -34,37 +35,37 @@ const initApp = (): Promise<Express> => {
       app.use(bodyParser.json());
       ``;
       // passport and session
-      app.use(
-        session({
-          secret: process.env.SESSION_SECRET,
-          resave: false,
-          saveUninitialized: true,
-        })
-      );
-      app.use(passport.initialize());
-      app.use(passport.session());
-      passport.serializeUser((user, done) => {
-        done(null, user);
-      });
-      passport.deserializeUser((user, done) => {
-        done(null, user);
-      });
-      passport.use(
-        new GoogleStrategy(
-          {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: process.env.GOOGLE_CALLBACK_URL,
-          },
-          async (accessToken, refreshToken, profile, done) => {
-            const user = await auth_controller.findOrCreateGoogleUser(
-              profile.emails[0].value,
-              profile.displayName
-            );
-            return done(null, user);
-          }
-        )
-      );
+      // app.use(
+      //   session({
+      //     secret: process.env.SESSION_SECRET,
+      //     resave: false,
+      //     saveUninitialized: true,
+      //   })
+      // );
+      // app.use(passport.initialize());
+      // app.use(passport.session());
+      // passport.serializeUser((user, done) => {
+      //   done(null, user);
+      // });
+      // passport.deserializeUser((user, done) => {
+      //   done(null, user);
+      // });
+      // passport.use(
+      //   new GoogleStrategy(
+      //     {
+      //       clientID: process.env.GOOGLE_CLIENT_ID,
+      //       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      //       callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      //     },
+      //     async (accessToken, refreshToken, profile, done) => {
+      //       const user = await auth_controller.findOrCreateGoogleUser(
+      //         profile.emails[0].value,
+      //         profile.displayName
+      //       );
+      //       return done(null, user);
+      //     }
+      //   )
+      // );
       // static files
       app.use(express.static("src/public"));
       // multer config
@@ -127,6 +128,7 @@ const initApp = (): Promise<Express> => {
       // paths
       app.use("/auth", authRouter);
       app.use("/posts", postRouter);
+      app.use("/api", placesRouter);
       app.use("/uploads", upload.single("file"), uploadRouter);
       // start server
       resolve(app);
