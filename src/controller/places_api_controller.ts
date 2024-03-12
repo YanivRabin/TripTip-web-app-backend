@@ -248,6 +248,7 @@ export async function fetchTips(apiKey: string, placeName: string) {
     const data = {
       htmlRef: response.data.results[0].photos[0].html_attributions[0],
       tips: tips,
+      placeName: placeName
     };
     
     return data;
