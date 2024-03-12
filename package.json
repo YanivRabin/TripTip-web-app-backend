@@ -8,6 +8,7 @@
     "testAuth": "tsc && jest --detectOpenHandles --forceExit ./src/test/auth.test.ts",
     "testPost": "tsc && jest --detectOpenHandles --forceExit ./src/test/post.test.ts",
     "testChat": "tsc && jest --detectOpenHandles --forceExit ./src/test/chat.test.ts",
+    "testPlacesApi": "tsc && jest --detectOpenHandles --forceExit ./src/test/placesApi.test.ts",
     "dev": "nodemon ./src/server.ts",
     "start": "tsc && node dist/src/server.js",
     "lint": "eslint . --ext .ts"
@@ -15,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -27,7 +29,9 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7",
-    "socket.io": "^4.7.4"
+    "socket.io": "^4.7.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -38,6 +42,8 @@
     "@types/multer": "^1.4.11",
     "@types/passport": "^1.0.16",
     "@types/passport-google-oauth20": "^2.0.14",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.55.0",

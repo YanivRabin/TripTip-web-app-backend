@@ -10,6 +10,7 @@ router.post('/register', auth_controller_1.default.register);
 router.post('/login', auth_controller_1.default.login);
 router.post('/googleLogin', auth_controller_1.default.findOrCreateGoogleUser);
 router.put('/changeProfilePicture', auth_middleware_1.default, auth_controller_1.default.changeProfilePicture);
+router.put('/changeName', auth_middleware_1.default, auth_controller_1.default.changeName);
 router.get('/logout', auth_controller_1.default.logout);
 router.get('/refreshToken', auth_controller_1.default.refreshToken);
 router.get('/userInfo', auth_middleware_1.default, auth_controller_1.default.userInfo);

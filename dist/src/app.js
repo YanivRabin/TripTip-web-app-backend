@@ -18,11 +18,14 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const auth_route_1 = __importDefault(require("./routes/auth_route"));
 const post_route_1 = __importDefault(require("./routes/post_route"));
 const chat_controller_1 = __importDefault(require("./controller/chat_controller"));
+const places_api_route_1 = __importDefault(require("./routes/places_api_route"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
+const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
@@ -76,10 +79,28 @@ const initApp = () => {
             // paths
             app.use("/auth", upload.single("file"), auth_route_1.default);
             app.use("/posts", upload.single("file"), post_route_1.default);
+            app.use("/api", places_api_route_1.default);
             app.get("/api/googleClientId", (req, res) => {
                 const googleClientId = process.env.GOOGLE_CLIENT_ID;
                 res.json({ clientId: googleClientId });
             });
+            // Swagger
+            if (process.env.NODE_ENV == "development") {
+                const options = {
+                    definition: {
+                        openapi: "3.0.0",
+                        info: {
+                            title: "Trip Tip - Web dev 2024 REST API",
+                            version: "1.0.0",
+                            description: "REST server including authentication using JWT",
+                        },
+                        servers: [{ url: "http://localhost:3000" }],
+                    },
+                    apis: ["./src/routes/*.ts"],
+                };
+                const specs = (0, swagger_jsdoc_1.default)(options);
+                app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs));
+            }
             // start server
             resolve(server);
         });
