@@ -97,8 +97,6 @@ const logout = async (req: Request, res: Response) => {
     // check if token is valid
     jwt.verify(token, process.env.JWT_SECRET, async (err: { message: string; }, user: { '_id': string }) => {
         try {
-            console.log("user: ",user);
-            
             // check if user exist
             const userDb = await User.findById(user._id);
             if (userDb === null) {
