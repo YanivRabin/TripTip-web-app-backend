@@ -16,9 +16,15 @@ const register = async (req: Request, res: Response) => {
     try {
         // check if user exist
         const existUser = await User.findOne({ email: email });
-        if (existUser != null) {
-            return res.status(406).send("email already exists");
+        const existUser2 = await User.findOne({ name: name });
+        if (existUser2 != null ) {
+            return res.status(406).send("Name already exists - choose a different name");
         }
+        if (existUser != null ) {
+            return res.status(406).send("Email already exists");
+        }
+        
+        
         // encrypt password and save user
         const salt = await bcrypt.genSalt(10);
         const encryptedPassword = await bcrypt.hash(password, salt);
