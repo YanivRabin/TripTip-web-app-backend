@@ -95,8 +95,10 @@ const logout = async (req: Request, res: Response) => {
         return res.sendStatus(401);
     }
     // check if token is valid
-    jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err: { message: string; }, user: { '_id': string }) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err: { message: string; }, user: { '_id': string }) => {
         try {
+            console.log("user: ",user);
+            
             // check if user exist
             const userDb = await User.findById(user._id);
             if (userDb === null) {
@@ -109,6 +111,8 @@ const logout = async (req: Request, res: Response) => {
                 userDb.tokens = userDb.tokens.filter(t => t !== token);
             }
             await userDb.save();
+            console.log("userDb: ",userDb);
+            
             return res.status(200).send(userDb);
         } catch (err) {
             return res.sendStatus(500);
