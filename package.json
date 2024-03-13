@@ -11,7 +11,8 @@
     "testPlacesApi": "tsc && jest --detectOpenHandles --forceExit ./src/test/placesApi.test.ts",
     "dev": "nodemon ./src/server.ts",
     "start": "tsc && node dist/src/server.js",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "prod": "tsc -p tsconfig_prod.json && node ./dist/src/server.js"
   },
   "author": "",
   "license": "ISC",
