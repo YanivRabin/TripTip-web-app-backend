@@ -280,8 +280,8 @@ const changeName = async (req: Request, res: Response) => {
     }
     await Post.updateMany({ name: name }, { name: newName }, { new: true });
     return res.status(200).send(user);
-  } catch {
-    return res.status(500);
+  } catch (error){
+    return res.status(500).send(error.message);
   }
 };
 
