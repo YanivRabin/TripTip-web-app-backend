@@ -5,7 +5,7 @@ initApp().then((app) => {
     if (process.env.NODE_ENV !== "production") {
         port = process.env.PORT;
     } else {
-        port = process.env.HTPPS_PORT;
+        port = process.env.HTTPS_PORT;
     }
     app.listen(port, () => {
         console.log(`App listening at http://localhost:${port}`);
