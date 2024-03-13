@@ -186,7 +186,7 @@ const refreshToken = async (req: Request, res: Response) => {
   );
 };
 
-const userInfo = async (req: Request, res: Response) => {
+const userInfo = async (req: Request & { user: { _id: string } }, res: Response) => {
   try {
     const user = await User.findById(req.user["_id"]);
     if (user === null) {
