@@ -10,12 +10,27 @@ import multer from "multer";
 import path from "path";
 import cors from "cors";
 import http from "http";
+import https from "https";
+import fs from "fs";
 import { Server, Socket } from "socket.io";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 
+let server;
+
 const app = express();
-const server = http.createServer(app);
+if (process.env.NODE_ENV !== "production") {
+  console.log("Development mode");
+  server = http.createServer(app);
+} else {
+  console.log("Production mode");
+  const credentials = {
+    key: fs.readFileSync("../client-key.pem"),
+    cert: fs.readFileSync("../client-cert.pem"),
+  };
+  server = https.createServer(credentials, app);
+}
+
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
