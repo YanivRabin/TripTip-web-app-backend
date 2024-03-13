@@ -83,22 +83,21 @@ const initApp = (): Promise<http.Server> => {
         res.json({ clientId: googleClientId });
       });
       // Swagger
-      if (process.env.NODE_ENV == "development") {
-        const options = {
-          definition: {
-            openapi: "3.0.0",
-            info: {
-              title: "Trip Tip - Web dev 2024 REST API",
-              version: "1.0.0",
-              description: "REST server including authentication using JWT",
-            },
-            servers: [{ url: "http://localhost:3000" }],
+      const options = {
+        definition: {
+          openapi: "3.0.0",
+          info: {
+            title: "Trip Tip - Web dev 2024 REST API",
+            version: "1.0.0",
+            description: "REST server including authentication using JWT",
           },
-          apis: ["./src/routes/*.ts"],
-        };
-        const specs = swaggerJsDoc(options);
-        app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
-      }
+          servers: [{ url: "http://localhost" }],
+        },
+        apis: ["./src/routes/*.ts"],
+      };
+      const specs = swaggerJsDoc(options);
+      app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
+
       // start server
       resolve(server);
     });
