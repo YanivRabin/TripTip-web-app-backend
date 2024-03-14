@@ -33,7 +33,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost",
+    origin: "https://node35.cs.colman.ac.il",
     methods: ["GET", "POST"],
   },
 });
