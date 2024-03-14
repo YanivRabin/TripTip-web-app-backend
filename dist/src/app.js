@@ -23,11 +23,25 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const http_1 = __importDefault(require("http"));
+const https_1 = __importDefault(require("https"));
+const fs_1 = __importDefault(require("fs"));
 const socket_io_1 = require("socket.io");
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+let server;
 const app = (0, express_1.default)();
-const server = http_1.default.createServer(app);
+if (process.env.NODE_ENV !== "production") {
+    console.log("Development mode");
+    server = http_1.default.createServer(app);
+}
+else {
+    console.log("Production mode");
+    const credentials = {
+        key: fs_1.default.readFileSync("../client-key.pem"),
+        cert: fs_1.default.readFileSync("../client-cert.pem"),
+    };
+    server = https_1.default.createServer(credentials, app);
+}
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: "http://localhost:5173",
@@ -85,22 +99,20 @@ const initApp = () => {
                 res.json({ clientId: googleClientId });
             });
             // Swagger
-            if (process.env.NODE_ENV == "development") {
-                const options = {
-                    definition: {
-                        openapi: "3.0.0",
-                        info: {
-                            title: "Trip Tip - Web dev 2024 REST API",
-                            version: "1.0.0",
-                            description: "REST server including authentication using JWT",
-                        },
-                        servers: [{ url: "http://localhost:3000" }],
+            const options = {
+                definition: {
+                    openapi: "3.0.0",
+                    info: {
+                        title: "Trip Tip - Web dev 2024 REST API",
+                        version: "1.0.0",
+                        description: "REST server including authentication using JWT",
                     },
-                    apis: ["./src/routes/*.ts"],
-                };
-                const specs = (0, swagger_jsdoc_1.default)(options);
-                app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs));
-            }
+                    servers: [{ url: "http://localhost" }],
+                },
+                apis: ["./src/routes/*.ts"],
+            };
+            const specs = (0, swagger_jsdoc_1.default)(options);
+            app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs));
             // start server
             resolve(server);
         });

@@ -256,8 +256,8 @@ const changeName = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield post_model_1.default.updateMany({ name: name }, { name: newName }, { new: true });
         return res.status(200).send(user);
     }
-    catch (_b) {
-        return res.status(500);
+    catch (error) {
+        return res.status(500).send(error.message);
     }
 });
 const allUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -265,7 +265,7 @@ const allUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const users = yield user_model_1.default.find();
         return res.status(200).send(users);
     }
-    catch (_c) {
+    catch (_b) {
         return res.status(500);
     }
 });

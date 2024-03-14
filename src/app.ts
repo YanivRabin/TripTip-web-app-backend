@@ -112,7 +112,10 @@ const initApp = (): Promise<http.Server> => {
       };
       const specs = swaggerJsDoc(options);
       app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
-
+      app.use("/assets", express.static('src/public/client/assets'));
+      app.use("*", (req, res) => {
+        res.sendFile('index.html', { root: 'src/public/client' });
+      });
       // start server
       resolve(server);
     });
