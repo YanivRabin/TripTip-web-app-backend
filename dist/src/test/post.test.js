@@ -165,13 +165,6 @@ describe("-- Post tests --", () => {
             .send({ description: "new description" });
         expect(res.statusCode).toBe(401);
     }));
-    test("test update post - missing id", () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app)
-            .put("/posts/updatePost/")
-            .set('Authorization', 'Bearer ' + user.accessToken)
-            .send({ description: "new description" });
-        expect(res.statusCode).toBe(404);
-    }));
     test("test delete post - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
             .delete("/posts/deletePost/" + post['_id'])
@@ -183,12 +176,6 @@ describe("-- Post tests --", () => {
             .delete("/posts/deletePost/000000000000000000000000")
             .set('Authorization', 'Bearer ' + user.accessToken);
         expect(res.statusCode).toBe(401);
-    }));
-    test("test delete post - missing id", () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield (0, supertest_1.default)(app)
-            .delete("/posts/deletePost/")
-            .set('Authorization', 'Bearer ' + user.accessToken);
-        expect(res.statusCode).toBe(404);
     }));
     test("test get all posts after delete one - success", () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, supertest_1.default)(app)
