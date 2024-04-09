@@ -32,6 +32,6 @@ const addMessage = async (roomId: string, sender: string, message: string) => {
 };
 
 export = {
-    getMessages,
-    addMessage
+    addMessage,
+    getMessages
 }
